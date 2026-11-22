@@ -46,5 +46,5 @@ app.add_exception_handler(UnauthorizedError, handle_unauthorized)
 app.include_router(api_router)
 app.mount("/studio", StaticFiles(directory=frontend_dir, html=True), name="studio")
 
-# Keep this last because the mount matches all remaining paths.
+
 app.mount("/", mcp_http_app, name="mcp")
