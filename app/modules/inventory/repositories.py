@@ -35,3 +35,24 @@ class InventoryRepository:
         )
 
         return await self.session.scalar(statement)
+    
+
+    async def get_branch_by_code(self, branch_code: str) -> Branch | None:
+        statement = select(Branch).where(Branch.code == branch_code)
+        return await self.session.scalar(statement)
+
+    async def expiring_batches(self, branch: Branch, today: date, cutoff: date):
+        statement = (
+            select(StockBatch, Medicine.sku, Medicine.name)
+            .join(Medicine, Medicine.id == StockBatch.medicine_id)
+            .where(
+                StockBatch.branch_id == branch.id,
+                StockBatch.quantity_remaining > 0,
+                StockBatch.received_on <= today,
+                StockBatch.expires_on > today,
+                StockBatch.expires_on <= cutoff,
+            )
+            .order_by(StockBatch.expires_on, Medicine.sku, StockBatch.id)
+        )
+        result = await self.session.execute(statement)
+        return result.all()
