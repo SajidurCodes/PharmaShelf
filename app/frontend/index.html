@@ -41,6 +41,40 @@
         </div>
       </form>
     </section>
+    <section aria-labelledby="owner-heading">
+  <h2 id="owner-heading">Owner dashboard</h2>
+
+  <details>
+    <summary>Check stock nearing expiry</summary>
+    <form id="expiry-form">
+      <p>
+        <label>
+          Owner email
+          <input name="email" type="email" autocomplete="username" required>
+        </label>
+      </p>
+      <p>
+        <label>
+          Password
+          <input name="password" type="password" autocomplete="current-password" required>
+        </label>
+      </p>
+      <p>
+        <label>
+          Branch code
+          <input name="branch" value="DEMO-01" maxlength="40" required>
+        </label>
+      </p>
+      <button type="submit">Show 30-day expiry report</button>
+    </form>
+
+    <p id="expiry-status" role="status"></p>
+    <div id="expiry-result" hidden>
+      <h3 id="expiry-total"></h3>
+      <ul id="expiry-lots"></ul>
+    </div>
+  </details>
+</section>
   </main>
 </body>
 </html>
