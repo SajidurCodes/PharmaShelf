@@ -15,6 +15,7 @@ COPY --from=builder /app/.venv /app/.venv
 COPY --chown=app:app app/ ./app/
 COPY --chown=app:app alembic.ini ./alembic.ini
 COPY --chown=app:app alembic/ ./alembic/
+COPY --chown=app:app scripts/ ./scripts/
 
 ENV PATH="/app/.venv/bin:$PATH"
 
