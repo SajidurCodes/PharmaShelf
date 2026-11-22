@@ -1,7 +1,7 @@
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
-from app.core.exceptions.errors import ConflictError, UnauthorizedError
+from app.core.exceptions.errors import ConflictError, ForbiddenError, UnauthorizedError
 
 
 async def handle_conflict(request: Request, exc: ConflictError) -> JSONResponse:
@@ -14,3 +14,6 @@ async def handle_unauthorized(request: Request, exc: UnauthorizedError) -> JSONR
         content={"detail": str(exc)},
         headers={"WWW-Authenticate": "Bearer"},
     )
+
+async def handle_forbidden(request: Request, exc: ForbiddenError) -> JSONResponse:
+    return JSONResponse(status_code=403, content={"detail": str(exc)})

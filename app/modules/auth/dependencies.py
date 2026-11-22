@@ -9,6 +9,8 @@ from fastapi.security import OAuth2PasswordBearer
 
 from app.modules.auth.schemas import UserRead
 
+from app.core.exceptions.errors import ForbiddenError
+
 
 def get_auth_service(session: SessionDep) -> AuthService:
     return AuthService(UserRepository(session))
@@ -27,3 +29,7 @@ async def get_current_user(
 
 
 CurrentUserDep = Annotated[UserRead, Depends(get_current_user)]
+
+def require_admin(user: CurrentUserDep) -> None:
+    if user.role != "admin":
+        raise ForbiddenError("Owner access required")

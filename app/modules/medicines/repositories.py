@@ -2,6 +2,9 @@ from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.medicines.models import Medicine
+from sqlalchemy.dialects.postgresql import insert
+
+from app.modules.medicines.schemas import MedicineCreate
 
 
 class MedicineRepository:
@@ -23,3 +26,15 @@ class MedicineRepository:
         statement = statement.order_by(Medicine.name, Medicine.sku).limit(limit)
         result = await self.session.scalars(statement)
         return list(result)
+
+    async def create(self, data: MedicineCreate) -> Medicine | None:
+        statement = (
+            insert(Medicine)
+            .values(**data.model_dump())
+            .on_conflict_do_nothing(index_elements=[Medicine.sku])
+            .returning(Medicine)
+        )
+
+        medicine = await self.session.scalar(statement)
+        await self.session.commit()
+        return medicine

@@ -1,9 +1,13 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Query
 
 from app.modules.medicines.dependencies import MedicineServiceDep
-from app.modules.medicines.schemas import MedicineRead
+
+
+from fastapi import APIRouter, Depends, Query, status
+
+from app.modules.auth.dependencies import require_admin
+from app.modules.medicines.schemas import MedicineCreate, MedicineRead
 
 
 router = APIRouter(prefix="/medicines", tags=["Medicines"])
@@ -16,3 +20,17 @@ async def list_medicines(
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
 ) -> list[MedicineRead]:
     return await service.search(q, limit)
+
+
+
+@router.post(
+    "",
+    response_model=MedicineRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin)],
+)
+async def create_medicine(
+    data: MedicineCreate,
+    service: MedicineServiceDep,
+) -> MedicineRead:
+    return await service.create(data)
