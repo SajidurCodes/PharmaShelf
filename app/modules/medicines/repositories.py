@@ -1,10 +1,13 @@
-from sqlalchemy import or_, select
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.medicines.models import Medicine
 from sqlalchemy.dialects.postgresql import insert
 
-from app.modules.medicines.schemas import MedicineCreate
+
+
+from sqlalchemy import or_, select, update
+from app.modules.medicines.schemas import MedicineCreate, MedicineUpdate
 
 
 class MedicineRepository:
@@ -42,3 +45,18 @@ class MedicineRepository:
     async def get_by_sku(self, sku: str) -> Medicine | None:
         statement = select(Medicine).where(Medicine.sku == sku)
         return await self.session.scalar(statement)
+
+
+    async def update_by_sku(self, sku: str, data: MedicineUpdate) -> Medicine | None:
+        changes = data.model_dump(exclude_unset=True)
+
+        statement = (
+            update(Medicine)
+            .where(Medicine.sku == sku)
+            .values(**changes)
+            .returning(Medicine)
+        )
+
+        medicine = await self.session.scalar(statement)
+        await self.session.commit()
+        return medicine

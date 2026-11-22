@@ -1,6 +1,6 @@
 from app.modules.medicines.repositories import MedicineRepository
 from app.core.exceptions.errors import ConflictError
-from app.modules.medicines.schemas import MedicineCreate, MedicineRead
+from app.modules.medicines.schemas import MedicineCreate, MedicineRead, MedicineUpdate
 from app.core.exceptions.errors import ConflictError, NotFoundError
 
 
@@ -20,6 +20,13 @@ class MedicineService:
         return MedicineRead.model_validate(medicine)
     async def get_by_sku(self, sku: str) -> MedicineRead:
         medicine = await self.repository.get_by_sku(sku)
+        if medicine is None:
+            raise NotFoundError(f"Medicine with SKU '{sku}' was not found")
+
+        return MedicineRead.model_validate(medicine)
+
+    async def update_by_sku(self, sku: str, data: MedicineUpdate) -> MedicineRead:
+        medicine = await self.repository.update_by_sku(sku, data)
         if medicine is None:
             raise NotFoundError(f"Medicine with SKU '{sku}' was not found")
 

@@ -7,7 +7,7 @@ from app.modules.medicines.dependencies import MedicineServiceDep
 from fastapi import APIRouter, Depends, Query, status
 
 from app.modules.auth.dependencies import require_admin
-from app.modules.medicines.schemas import MedicineCreate, MedicineRead
+from app.modules.medicines.schemas import MedicineCreate, MedicineRead, MedicineUpdate
 
 
 router = APIRouter(prefix="/medicines", tags=["Medicines"])
@@ -39,3 +39,16 @@ async def create_medicine(
 @router.get("/{sku}", response_model=MedicineRead)
 async def get_medicine(sku: str, service: MedicineServiceDep) -> MedicineRead:
     return await service.get_by_sku(sku)
+
+
+@router.patch(
+    "/{sku}",
+    response_model=MedicineRead,
+    dependencies=[Depends(require_admin)],
+)
+async def update_medicine(
+    sku: str,
+    data: MedicineUpdate,
+    service: MedicineServiceDep,
+) -> MedicineRead:
+    return await service.update_by_sku(sku, data)
