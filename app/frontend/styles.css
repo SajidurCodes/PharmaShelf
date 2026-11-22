@@ -1,0 +1,103 @@
+:root {
+  color-scheme: dark;
+  --bg: #101815;
+  --panel: #18241e;
+  --input: #101a15;
+  --text: #edf5ef;
+  --muted: #b4c5b9;
+  --line: #405649;
+  --accent: #9be5b2;
+  --button-text: #102318;
+}
+
+:root[data-theme="dim"] {
+  --bg: #26332f;
+  --panel: #303f39;
+  --input: #26342d;
+  --text: #f2f5ed;
+  --muted: #c6d2c9;
+  --line: #617269;
+  --accent: #b6e7ba;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f5f7f2;
+  --panel: #ffffff;
+  --input: #f8faf6;
+  --text: #192b20;
+  --muted: #496354;
+  --line: #aebfb2;
+  --accent: #24623e;
+  --button-text: #ffffff;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 1rem/1.55 "Segoe UI", sans-serif;
+}
+
+.topbar, main {
+  width: min(100% - 2rem, 54rem);
+  margin: 0 auto;
+}
+
+.topbar, .actions, .theme-control {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+
+.topbar {
+  justify-content: space-between;
+  padding: 1.2rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand { color: var(--accent); font-size: 1.3rem; }
+main { padding: clamp(2rem, 6vw, 4.5rem) 0; }
+h1 { font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.1; margin: 0; }
+.intro, #status { color: var(--muted); }
+.intro { max-width: 60ch; margin: 1rem 0 2rem; }
+
+.chat {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: clamp(1rem, 4vw, 2rem);
+}
+
+#messages:empty { display: none; }
+#messages { margin-bottom: 1.5rem; }
+.message { padding: .8rem 0; border-bottom: 1px solid var(--line); }
+.message strong { color: var(--accent); }
+.message p { margin: .25rem 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+textarea, select, button {
+  font: inherit;
+  border-radius: .5rem;
+}
+
+textarea, select {
+  background: var(--input);
+  color: var(--text);
+  border: 1px solid var(--line);
+  padding: .5rem .75rem;
+}
+
+textarea { display: block; width: 100%; margin: .5rem 0 .8rem; resize: vertical; }
+.actions { justify-content: space-between; }
+button {
+  background: var(--accent);
+  color: var(--button-text);
+  border: 0;
+  padding: .6rem 1rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+button:disabled { opacity: .6; cursor: wait; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
