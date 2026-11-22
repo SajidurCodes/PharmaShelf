@@ -38,3 +38,7 @@ class MedicineRepository:
         medicine = await self.session.scalar(statement)
         await self.session.commit()
         return medicine
+
+    async def get_by_sku(self, sku: str) -> Medicine | None:
+        statement = select(Medicine).where(Medicine.sku == sku)
+        return await self.session.scalar(statement)

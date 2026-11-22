@@ -34,3 +34,8 @@ async def create_medicine(
     service: MedicineServiceDep,
 ) -> MedicineRead:
     return await service.create(data)
+
+
+@router.get("/{sku}", response_model=MedicineRead)
+async def get_medicine(sku: str, service: MedicineServiceDep) -> MedicineRead:
+    return await service.get_by_sku(sku)

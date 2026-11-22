@@ -7,3 +7,7 @@ class UnauthorizedError(Exception):
 
 class ForbiddenError(Exception):
     """The signed-in user lacks permission for this action."""
+
+
+class NotFoundError(Exception):
+    """The requested record could not be found."""
