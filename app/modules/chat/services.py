@@ -1,5 +1,5 @@
 from google.genai import types
-
+from app.modules.chat.schemas import ChatMessage
 from app.integrations.llm.gemini import GeminiProvider
 from app.modules.chat.prompts import CUSTOMER_SYSTEM_PROMPT
 from app.modules.chat.tools import CustomerCatalogTools
@@ -49,10 +49,13 @@ class CustomerChatService:
 
         return {"error": "Unknown tool or invalid arguments"}
 
-    async def ask(self, question: str) -> dict:
+    async def ask(
+        self, question: str, history: list[ChatMessage] | None = None
+    ) -> dict:
         return await self.provider.chat_with_tools(
             question=question,
             system_prompt=CUSTOMER_SYSTEM_PROMPT,
             declarations=CUSTOMER_TOOLS,
             run_tool=self.run_tool,
+            history=history or [],
         )

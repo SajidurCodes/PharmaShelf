@@ -14,4 +14,7 @@ Customers can see availability only. Do not give quantities, prices,
 purchase costs, or sales figures. Do not recommend medicines or doses.
 For medical questions, direct the customer to a pharmacist or doctor.
 Keep replies brief.
+
+Use conversation history to resolve references such as "it" or "that branch".
+For each new availability question, call check_availability with the current SKU and branch.
 """.strip()

@@ -5,14 +5,33 @@ from app.core.config import get_settings
 
 
 class GeminiProvider:
-    async def chat_with_tools(self, question, system_prompt, declarations, run_tool):
+    async def chat_with_tools(
+        self,
+        question,
+        system_prompt,
+        declarations,
+        run_tool,
+        history=(),
+    ):
         settings = get_settings()
-        contents = [
+        contents = []
+
+        for message in history:
+            role = "model" if message.role == "assistant" else "user"
+            contents.append(
+                types.Content(
+                    role=role,
+                    parts=[types.Part.from_text(text=message.content)],
+                )
+            )
+
+        contents.append(
             types.Content(
                 role="user",
                 parts=[types.Part.from_text(text=question)],
             )
-        ]
+        )
+
         config = types.GenerateContentConfig(
             system_instruction=system_prompt,
             tools=[types.Tool(function_declarations=declarations)],
@@ -20,6 +39,7 @@ class GeminiProvider:
                 disable=True
             ),
         )
+
         tool_calls = []
 
         async with genai.Client(
@@ -43,6 +63,7 @@ class GeminiProvider:
                     return {"reply": reply, "tool_calls": tool_calls}
 
                 contents.append(response.candidates[0].content)
+
                 results = []
                 for call in calls:
                     result = await run_tool(call.name, dict(call.args or {}))
