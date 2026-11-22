@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     DB_PASSWORD: SecretStr
     JWT_SECRET: SecretStr = Field(min_length=32)
     ACCESS_TOKEN_MINUTES: int = Field(default=30, gt=0)
+    GEMINI_API_KEY: SecretStr = Field(min_length=1)
+    GEMINI_MODEL: str = Field(min_length=1)
 
     model_config = SettingsConfigDict(
         env_file=".env",
