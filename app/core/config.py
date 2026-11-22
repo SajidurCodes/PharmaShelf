@@ -3,7 +3,7 @@ from functools import lru_cache
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import URL
-
+from pydantic import Field, SecretStr
 
 class Settings(BaseSettings):
     APP_NAME: str = "PharmaShelf"
@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     DB_NAME: str = "pharmashelf"
     DB_USER: str = "pharmashelf"
     DB_PASSWORD: SecretStr
+    JWT_SECRET: SecretStr = Field(min_length=32)
+    ACCESS_TOKEN_MINUTES: int = Field(default=30, gt=0)
 
     model_config = SettingsConfigDict(
         env_file=".env",

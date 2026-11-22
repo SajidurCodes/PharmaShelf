@@ -16,3 +16,8 @@ class UserRead(BaseModel):
     id: UUID
     email: EmailStr
     role: str
+
+
+class TokenRead(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
