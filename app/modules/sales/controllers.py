@@ -2,7 +2,18 @@ from fastapi import APIRouter, Depends, Response, status
 
 from app.modules.auth.dependencies import require_admin
 from app.modules.sales.dependencies import SaleServiceDep
-from app.modules.sales.schemas import SaleCreate, SaleRead
+
+
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Query, Response, status
+
+from app.modules.sales.schemas import (
+    BestSellerFilters,
+    BestSellerRead,
+    SaleCreate,
+    SaleRead,
+)
 
 
 router = APIRouter(prefix="/sales", tags=["Sales"])
@@ -22,3 +33,16 @@ async def record_sale(
     if not created:
         response.status_code = status.HTTP_200_OK
     return sale
+
+
+
+@router.get(
+    "/best-sellers",
+    response_model=list[BestSellerRead],
+    dependencies=[Depends(require_admin)],
+)
+async def best_sellers(
+    filters: Annotated[BestSellerFilters, Query()],
+    service: SaleServiceDep,
+) -> list[BestSellerRead]:
+    return await service.best_sellers(filters)

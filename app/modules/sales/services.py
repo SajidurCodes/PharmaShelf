@@ -1,9 +1,10 @@
-from datetime import datetime, timezone
-from zoneinfo import ZoneInfo
 
+from zoneinfo import ZoneInfo
+from datetime import datetime, time, timedelta, timezone
 from app.core.exceptions.errors import ConflictError, NotFoundError
 from app.modules.sales.repositories import SaleRepository
-from app.modules.sales.schemas import SaleCreate, SaleRead
+from app.modules.sales.schemas import BestSellerFilters, BestSellerRead, SaleCreate, SaleRead
+
 
 
 class SaleService:
@@ -49,3 +50,11 @@ class SaleService:
         except Exception:
             await session.rollback()
             raise
+
+    async def best_sellers(self, filters: BestSellerFilters) -> list[BestSellerRead]:
+        dhaka = ZoneInfo("Asia/Dhaka")
+        start = datetime.combine(filters.start_date, time.min, tzinfo=dhaka)
+        next_day = filters.end_date + timedelta(days=1)
+        stop = datetime.combine(next_day, time.min, tzinfo=dhaka)
+
+        return await self.repository.best_sellers(filters, start, stop)
