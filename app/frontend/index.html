@@ -3,78 +3,100 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PharmaShelf | Medicine availability</title>
+  <title>PharmaShelf | Branch studio</title>
   <link rel="stylesheet" href="./styles.css">
   <script src="./app.js" defer></script>
 </head>
 <body>
   <header class="topbar">
-    <strong class="brand">PharmaShelf</strong>
+    <a class="brand" href="#main">
+      <span class="brand-mark" aria-hidden="true">✚</span>
+      PharmaShelf
+    </a>
+
     <label class="theme-control">
       Theme
       <select id="theme">
         <option value="dark">Dark</option>
-        <option value="dim">Dim</option>
+        <option value="dim">Semi-dark</option>
         <option value="light">Light</option>
       </select>
     </label>
   </header>
 
-  <main>
-    <h1>Check medicine availability</h1>
-    <p class="intro">
-      Enter a medicine name and branch code. To try the demo,
-      ask “Is paracetamol available at DEMO-01?”
-    </p>
+  <main id="main">
+    <header class="hero">
+      <h1>Medicine <em>availability.</em></h1>
+      <p>Check a medicine at your branch. Pharmacy owners can also review upcoming expiries and sales.</p>
+    </header>
 
-    <section class="chat" aria-label="PharmaShelf assistant">
-      <div id="messages" role="log" aria-live="polite"
-           aria-label="Conversation"></div>
+    <div class="workspace">
+      <section class="card" aria-labelledby="chat-title">
+        <h2 id="chat-title">Ask PharmaShelf</h2>
+        <p class="intro">Include the medicine name and branch code in your question.</p>
 
-      <form id="chat-form">
-        <label for="question">Your question</label>
-        <textarea id="question" rows="3" maxlength="2000" required
-          placeholder="Is paracetamol available at DEMO-01?"></textarea>
-        <div class="actions">
-          <span id="status" role="status"></span>
-          <button id="send" type="submit">Send question</button>
+        <div id="messages" role="log" aria-label="Conversation"></div>
+
+        <form id="chat-form">
+          <label for="question">Your question</label>
+          <textarea id="question" rows="4" maxlength="2000" required
+            placeholder="Is paracetamol available at DEMO-01?"></textarea>
+
+          <div class="actions">
+            <span id="chat-status" class="status" role="status"></span>
+            <button type="submit">Send question <span aria-hidden="true">↗</span></button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card owner-card" aria-labelledby="owner-title">
+        <h2 id="owner-title">Owner reports</h2>
+        <p class="intro">Sign in to view inventory and sales for a branch.</p>
+
+        <form id="report-form">
+          <label for="report-type">Report</label>
+          <select id="report-type">
+            <option value="expiry">Expiry risk · next 30 days</option>
+            <option value="sales">Best sellers</option>
+          </select>
+
+          <label for="branch">Branch code</label>
+          <input id="branch" value="DEMO-01" maxlength="40" required>
+
+          <fieldset id="sales-fields" hidden disabled>
+            <legend>Sales period</legend>
+            <div class="date-grid">
+              <label>From<input id="start-date" type="date" required></label>
+              <label>To<input id="end-date" type="date" required></label>
+            </div>
+
+            <label for="rank">Rank by</label>
+            <select id="rank">
+              <option value="units">Units sold</option>
+              <option value="revenue">Revenue (BDT)</option>
+            </select>
+          </fieldset>
+
+          <label for="owner-email">Owner email</label>
+          <input id="owner-email" type="email" autocomplete="username" required>
+
+          <label for="owner-password">Password</label>
+          <input id="owner-password" type="password"
+                 autocomplete="current-password" required>
+
+          <button class="report-button" type="submit">
+            View report <span aria-hidden="true">→</span>
+          </button>
+        </form>
+
+        <p id="report-status" class="status" role="status"></p>
+
+        <div id="report-result" hidden>
+          <h3 id="report-title"></h3>
+          <ul id="report-rows"></ul>
         </div>
-      </form>
-    </section>
-    <section aria-labelledby="owner-heading">
-  <h2 id="owner-heading">Owner dashboard</h2>
-
-  <details>
-    <summary>Check stock nearing expiry</summary>
-    <form id="expiry-form">
-      <p>
-        <label>
-          Owner email
-          <input name="email" type="email" autocomplete="username" required>
-        </label>
-      </p>
-      <p>
-        <label>
-          Password
-          <input name="password" type="password" autocomplete="current-password" required>
-        </label>
-      </p>
-      <p>
-        <label>
-          Branch code
-          <input name="branch" value="DEMO-01" maxlength="40" required>
-        </label>
-      </p>
-      <button type="submit">Show 30-day expiry report</button>
-    </form>
-
-    <p id="expiry-status" role="status"></p>
-    <div id="expiry-result" hidden>
-      <h3 id="expiry-total"></h3>
-      <ul id="expiry-lots"></ul>
+      </section>
     </div>
-  </details>
-</section>
   </main>
 </body>
 </html>
