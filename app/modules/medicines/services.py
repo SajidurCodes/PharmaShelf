@@ -31,3 +31,9 @@ class MedicineService:
             raise NotFoundError(f"Medicine with SKU '{sku}' was not found")
 
         return MedicineRead.model_validate(medicine)
+
+
+    async def delete_by_sku(self, sku: str) -> None:
+        deleted = await self.repository.delete_by_sku(sku)
+        if not deleted:
+            raise NotFoundError(f"Medicine with SKU '{sku}' was not found")

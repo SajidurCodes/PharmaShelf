@@ -4,10 +4,10 @@ from typing import Annotated
 from app.modules.medicines.dependencies import MedicineServiceDep
 
 
-from fastapi import APIRouter, Depends, Query, status
 
 from app.modules.auth.dependencies import require_admin
 from app.modules.medicines.schemas import MedicineCreate, MedicineRead, MedicineUpdate
+from fastapi import APIRouter, Depends, Query, Response, status
 
 
 router = APIRouter(prefix="/medicines", tags=["Medicines"])
@@ -52,3 +52,13 @@ async def update_medicine(
     service: MedicineServiceDep,
 ) -> MedicineRead:
     return await service.update_by_sku(sku, data)
+
+@router.delete(
+    "/{sku}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    dependencies=[Depends(require_admin)],
+)
+async def delete_medicine(sku: str, service: MedicineServiceDep) -> Response:
+    await service.delete_by_sku(sku)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -4,9 +4,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.modules.medicines.models import Medicine
 from sqlalchemy.dialects.postgresql import insert
 
+from sqlalchemy import delete, or_, select, update
+from sqlalchemy.exc import IntegrityError
 
-
-from sqlalchemy import or_, select, update
+from app.core.exceptions.errors import ConflictError
 from app.modules.medicines.schemas import MedicineCreate, MedicineUpdate
 
 
@@ -60,3 +61,24 @@ class MedicineRepository:
         medicine = await self.session.scalar(statement)
         await self.session.commit()
         return medicine
+
+
+    async def delete_by_sku(self, sku: str) -> bool:
+        statement = (
+            delete(Medicine)
+            .where(Medicine.sku == sku)
+            .returning(Medicine.id)
+        )
+
+        try:
+            deleted_id = await self.session.scalar(statement)
+            await self.session.commit()
+        except IntegrityError as exc:
+            await self.session.rollback()
+            if getattr(exc.orig, "sqlstate", None) == "23503":
+                raise ConflictError(
+                    f"Medicine with SKU '{sku}' is referenced by other records"
+                ) from exc
+            raise
+
+        return deleted_id is not None
