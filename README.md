@@ -21,6 +21,22 @@ For example, if a lot has 17 units left at a unit cost of ৳3.50, the expiry re
 
 The assistant is intended for stock and business operations. Questions about diagnosis, treatment, or dosage belong with a pharmacist or doctor.
 
+
+## Local demo accounts
+
+Run `docker compose up -d --build` and open [the branch workspace](http://localhost:8010/studio/).
+The local startup script creates these accounts automatically.
+
+| Account | Email | Password | First thing to try |
+|---|---|---|---|
+| Owner (`admin`) | `owner@pharmashelf.example.com` | `Demo-Owner-7Qm4-2026!` | Open Reports and request the 30-day expiry report for `DEMO-01`. |
+| Pharmacist (`staff`) | `staff@pharmashelf.example.com` | `Demo-Staff-9Kp2-2026!` | Sign in through Swagger and check your role at `GET /api/v1/auth/me`. |
+| Customer (`customer`) | `customer@pharmashelf.example.com` | `Demo-Customer-3Vr8-2026!` | Sign in through Swagger to try the customer account. |
+
+For a quick public demo, open **Availability** and ask “Is paracetamol available at DEMO-01?” No login is required.
+
+These shared credentials are for the local Docker demo. Hosted accounts are managed separately.
+
 ## Run locally with Docker
 
 You need Git, Docker with Compose, a Gemini API key for generated answers, and internet access on the first start to download the container images and embedding model. The supplied CPU embedding image targets Intel/AMD x86-64. The commands below use PowerShell.
