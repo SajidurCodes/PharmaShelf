@@ -97,6 +97,57 @@
         </div>
       </section>
     </div>
+
+    <section class="card import-card" aria-labelledby="import-heading">
+  <h2 id="import-heading">Import sales</h2>
+  <p class="intro">
+    Upload a sales workbook to check its rows before recording them.
+    <a href="./templates/sales-template.xlsx" download>Download the Excel template</a>
+  </p>
+
+  <form id="import-form">
+    <fieldset id="import-fields">
+      <legend>Sales workbook</legend>
+
+      <label for="import-file">Excel file</label>
+      <input id="import-file" type="file" accept=".xlsx" required>
+
+      <details>
+        <summary>Match my column names</summary>
+        <p class="intro">Enter the heading from your Sales sheet for each column you renamed.</p>
+        <div id="import-mapping"></div>
+      </details>
+
+      <label for="import-email">Owner email</label>
+      <input id="import-email" type="email" autocomplete="username" required>
+
+      <label for="import-password">Password</label>
+      <input id="import-password" type="password" autocomplete="current-password" required>
+
+      <button class="report-button" type="submit">Preview workbook</button>
+    </fieldset>
+  </form>
+
+  <p id="import-status" role="status"></p>
+
+  <div id="import-result" hidden>
+    <h3 id="import-summary"></h3>
+    <p id="import-totals"></p>
+    <div class="import-table-wrap">
+      <table id="import-table">
+        <caption>First 10 valid rows</caption>
+        <thead>
+          <tr><th>Excel row</th><th>Sale ID</th><th>Units</th><th>Unit price (৳)</th></tr>
+        </thead>
+        <tbody id="import-rows"></tbody>
+      </table>
+    </div>
+    <ul id="import-errors"></ul>
+    <button id="import-confirm" type="button" hidden>Confirm import</button>
+  </div>
+</section>
+
+<script src="./sales-import.js" defer></script>
   </main>
 </body>
 </html>

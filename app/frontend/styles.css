@@ -198,3 +198,23 @@ fieldset {
   .date-grid { grid-template-columns: 1fr; }
   .actions { flex-wrap: wrap; }
 }
+
+.import-card { margin: 0 0 3rem; }
+.import-card a { color: var(--accent); }
+.import-card details { margin: 1rem 0; }
+.import-card summary { color: var(--accent); cursor: pointer; }
+#import-fields { max-width: 40rem; }
+#import-fields:disabled { opacity: .7; }
+#import-status, #import-totals { color: var(--muted); }
+#import-status:empty, #import-errors:empty { display: none; }
+#import-result { margin-top: 1.25rem; }
+.import-table-wrap { max-width: 100%; overflow-x: auto; }
+#import-table { width: 100%; border-collapse: collapse; }
+#import-table caption { text-align: left; color: var(--muted); }
+#import-table th, #import-table td {
+  padding: .65rem .5rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+#import-errors { padding-left: 1.25rem; }
+#import-confirm { margin-top: 1rem; }

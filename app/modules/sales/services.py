@@ -13,43 +13,50 @@ class SaleService:
 
     async def record(self, data: SaleCreate) -> tuple[SaleRead, bool]:
         session = self.repository.session
-
         try:
-            batch = await self.repository.lock_batch(data.batch_id)
-            if batch is None:
-                raise NotFoundError("Stock batch was not found")
-
-            now = datetime.now(timezone.utc)
-            sale = await self.repository.insert_once(data, now)
-            created = sale is not None
-
-            if created:
-                today = now.astimezone(ZoneInfo("Asia/Dhaka")).date()
-
-                if batch.received_on > today or batch.expires_on <= today:
-                    raise ConflictError("This batch is unavailable for sale")
-
-                if batch.quantity_remaining < data.quantity:
-                    raise ConflictError("Insufficient stock in this batch")
-
-                batch.quantity_remaining -= data.quantity
-            else:
-                sale = await self.repository.get_by_id(data.id)
-                if (
-                    sale is None
-                    or sale.batch_id != data.batch_id
-                    or sale.quantity != data.quantity
-                    or sale.unit_sale_price != data.unit_sale_price
-                ):
-                    raise ConflictError("This sale ID was used for a different sale")
-
-            result = SaleRead.model_validate(sale)
+            result = await self.record_in_transaction(data)
             await session.commit()
-            return result, created
-
+            return result
         except Exception:
             await session.rollback()
             raise
+
+    async def record_in_transaction(
+        self,
+        data: SaleCreate,
+        *,
+        sold_at: datetime | None = None,
+    ) -> tuple[SaleRead, bool]:
+        """Record one sale. The caller owns the commit or rollback."""
+        batch = await self.repository.lock_batch(data.batch_id)
+        if batch is None:
+            raise NotFoundError("Stock batch was not found")
+
+        sale_time = sold_at if sold_at is not None else datetime.now(timezone.utc)
+        sale = await self.repository.insert_once(data, sale_time)
+
+        if sale is None:
+            existing = await self.repository.get_by_id(data.id)
+            if (
+                existing is None
+                or existing.batch_id != data.batch_id
+                or existing.quantity != data.quantity
+                or existing.unit_sale_price != data.unit_sale_price
+                or (sold_at is not None and existing.sold_at != sale_time)
+            ):
+                raise ConflictError("This sale ID was used for a different sale")
+
+            return SaleRead.model_validate(existing), False
+
+        sale_day = sale_time.astimezone(ZoneInfo("Asia/Dhaka")).date()
+        if batch.received_on > sale_day or batch.expires_on <= sale_day:
+            raise ConflictError("This batch was unavailable on the sale date")
+
+        if batch.quantity_remaining < data.quantity:
+            raise ConflictError("Insufficient stock in this batch")
+
+        batch.quantity_remaining -= data.quantity
+        return SaleRead.model_validate(sale), True
 
     async def best_sellers(self, filters: BestSellerFilters) -> list[BestSellerRead]:
         dhaka = ZoneInfo("Asia/Dhaka")
