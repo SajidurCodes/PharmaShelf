@@ -1,14 +1,14 @@
+from collections.abc import Callable
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from io import BytesIO
 from uuid import UUID
 from zipfile import BadZipFile, ZipFile
-
-from openpyxl import load_workbook
-from app.modules.imports.repositories import ImportRepository
-
 from zoneinfo import ZoneInfo
 
+from openpyxl import load_workbook
+
+from app.modules.imports.repositories import ImportRepository
 from app.modules.sales.repositories import SaleRepository
 from app.modules.sales.schemas import SaleCreate
 from app.modules.sales.services import SaleService
@@ -20,16 +20,20 @@ MAX_COLUMNS = 100
 MAX_EXPANDED_BYTES = 20_000_000
 
 
-def resolve_columns(headers: list, mapping: dict[str, str]) -> dict[str, int]:
-    """Match each sales field to its column position in the workbook."""
-    unknown = set(mapping) - set(SALES_COLUMNS)
+def resolve_columns(
+    headers: list,
+    mapping: dict[str, str],
+    columns: tuple[str, ...] = SALES_COLUMNS,
+) -> dict[str, int]:
+    """Match each required field to exactly one Excel column."""
+    unknown = set(mapping) - set(columns)
     if unknown:
-        raise ValueError(f"Unknown sales field: {', '.join(sorted(unknown))}")
+        raise ValueError(f"Unknown import field: {', '.join(sorted(unknown))}")
 
     normalized = [str(value or "").strip().casefold() for value in headers]
     positions = {}
 
-    for field in SALES_COLUMNS:
+    for field in columns:
         source = mapping.get(field, field).strip().casefold()
 
         if not source or normalized.count(source) != 1:
@@ -99,10 +103,16 @@ def parse_sale(row: dict) -> dict:
     }
 
 
-def read_sales_rows(
+def read_workbook_rows(
     content: bytes,
-    mapping: dict[str, str] | None = None,
+    mapping: dict[str, str] | None,
+    *,
+    sheet_name: str,
+    columns: tuple[str, ...],
+    parse_row: Callable[[dict], dict],
+    id_field: str,
 ) -> tuple[list[dict], list[dict]]:
+    """Read a sales or stock sheet and keep the original Excel row numbers."""
     try:
         with ZipFile(BytesIO(content)) as archive:
             expanded_size = sum(item.file_size for item in archive.infolist())
@@ -114,19 +124,22 @@ def read_sales_rows(
         raise ValueError("Upload a valid .xlsx workbook") from exc
 
     try:
-        if "Sales" not in workbook.sheetnames:
-            raise ValueError("The workbook needs a sheet named Sales")
+        if sheet_name not in workbook.sheetnames:
+            raise ValueError(f"The workbook needs a sheet named {sheet_name}")
 
-        sheet = workbook["Sales"]
+        sheet = workbook[sheet_name]
         if sheet.max_column and sheet.max_column > MAX_COLUMNS:
-            raise ValueError(f"The Sales sheet exceeds the {MAX_COLUMNS}-column preview limit")
+            raise ValueError(
+                f"The {sheet_name} sheet exceeds the {MAX_COLUMNS}-column preview limit"
+            )
 
         rows = iter(sheet.values)
-        positions = resolve_columns(list(next(rows, ())), mapping or {})
+        headers = list(next(rows, ()))
+        positions = resolve_columns(headers, mapping or {}, columns)
 
-        sales = []
+        records = []
         errors = []
-        seen = set()
+        seen_ids = set()
 
         for row_number, values in enumerate(rows, start=2):
             if row_number > MAX_ROWS + 1:
@@ -141,19 +154,36 @@ def read_sales_rows(
             }
 
             try:
-                sale = parse_sale(raw)
-                if sale["sale_id"] in seen:
-                    raise ValueError("sale_id repeats an earlier valid row in this workbook")
+                record = parse_row(raw)
+                record_id = record[id_field]
+                if record_id in seen_ids:
+                    raise ValueError(
+                        f"{id_field} repeats an earlier valid row in this workbook"
+                    )
             except ValueError as exc:
                 errors.append({"row": row_number, "message": str(exc)})
                 continue
 
-            seen.add(sale["sale_id"])
-            sales.append({**sale, "row": row_number})
+            seen_ids.add(record_id)
+            records.append({**record, "row": row_number})
 
-        return sales, errors
+        return records, errors
     finally:
         workbook.close()
+
+
+def read_sales_rows(
+    content: bytes,
+    mapping: dict[str, str] | None = None,
+) -> tuple[list[dict], list[dict]]:
+    return read_workbook_rows(
+        content,
+        mapping,
+        sheet_name="Sales",
+        columns=SALES_COLUMNS,
+        parse_row=parse_sale,
+        id_field="sale_id",
+    )
 
 
 def build_preview(sales: list[dict], errors: list[dict]) -> dict:
@@ -239,7 +269,6 @@ async def confirm_sales(
             )
 
             _, created = await service.record_in_transaction(data, sold_at=sold_at)
-
             if created:
                 inserted += 1
                 units_recorded += data.quantity

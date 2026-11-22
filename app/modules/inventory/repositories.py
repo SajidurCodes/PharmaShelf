@@ -1,10 +1,22 @@
 from datetime import date
 
-from sqlalchemy import select, true
+from sqlalchemy import  true
 from sqlalchemy.ext.asyncio import AsyncSession
 
+
+
+
+
+from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert
+
+from app.core.exceptions.errors import ConflictError, NotFoundError
 from app.modules.inventory.models import Branch, StockBatch
+from app.modules.inventory.schemas import StockReceiptCreate
 from app.modules.medicines.models import Medicine
+
+
+
 
 
 class InventoryRepository:
@@ -56,3 +68,49 @@ class InventoryRepository:
         )
         result = await self.session.execute(statement)
         return result.all()
+
+
+
+    async def receive_stock(
+        self, data: StockReceiptCreate
+    ) -> tuple[StockBatch, bool]:
+        branch_id = await self.session.scalar(
+            select(Branch.id).where(Branch.code == data.branch_code)
+        )
+        if branch_id is None:
+            raise NotFoundError("Branch was not found")
+
+        medicine_id = await self.session.scalar(
+            select(Medicine.id).where(Medicine.sku == data.sku)
+        )
+        if medicine_id is None:
+            raise NotFoundError("Medicine was not found")
+
+        receipt = {
+            "id": data.id,
+            "branch_id": branch_id,
+            "medicine_id": medicine_id,
+            "lot_number": data.lot_number,
+            "received_on": data.received_on,
+            "expires_on": data.expires_on,
+            "quantity_received": data.quantity_received,
+            "unit_cost": data.unit_cost,
+        }
+
+        statement = (
+            insert(StockBatch)
+            .values(**receipt, quantity_remaining=data.quantity_received)
+            .on_conflict_do_nothing(index_elements=[StockBatch.id])
+            .returning(StockBatch)
+        )
+        batch = await self.session.scalar(statement)
+        if batch is not None:
+            return batch, True
+
+        existing = await self.session.get(StockBatch, data.id)
+        if existing is None or any(
+            getattr(existing, field) != value for field, value in receipt.items()
+        ):
+            raise ConflictError("This receipt ID was used for a different delivery")
+
+        return existing, False

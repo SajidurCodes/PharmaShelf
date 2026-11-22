@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.health import router as health_router
+from app.modules.almanac.controllers import router as almanac_router
 from app.modules.medicines.controllers import router as medicines_router
 from app.modules.inventory.controllers import router as inventory_router
 from app.modules.auth.controllers import router as auth_router
@@ -16,3 +17,4 @@ api_router.include_router(auth_router)
 api_router.include_router(chat_router)
 api_router.include_router(sales_router)
 api_router.include_router(imports_router)
+api_router.include_router(almanac_router)

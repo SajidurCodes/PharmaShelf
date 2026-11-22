@@ -8,6 +8,7 @@ def main() -> None:
 
     subprocess.run([python, "-m", "alembic", "upgrade", "head"], check=True)
     subprocess.run([python, "-m", "scripts.seed_inventory"], check=True)
+    subprocess.run([python, "-m", "scripts.seed_almanac"], check=True)
 
     port = os.environ.get("PORT", "8000")
     os.execv(

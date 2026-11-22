@@ -33,3 +33,8 @@ CurrentUserDep = Annotated[UserRead, Depends(get_current_user)]
 def require_admin(user: CurrentUserDep) -> None:
     if user.role != "admin":
         raise ForbiddenError("Owner access required")
+
+    
+def require_inventory_staff(user: CurrentUserDep) -> None:
+    if user.role not in {"admin", "staff"}:
+        raise ForbiddenError("Owner or pharmacist access required")

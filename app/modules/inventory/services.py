@@ -1,9 +1,6 @@
 
-
-
 from app.modules.inventory.repositories import InventoryRepository
-
-
+from app.modules.inventory.schemas import StockReceiptCreate, StockReceiptRead
 
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -82,3 +79,22 @@ class InventoryService:
             total_at_risk_bdt=total,
             batches=batches,
         )
+
+
+class StockReceiptService:
+    def __init__(self, repository: InventoryRepository):
+        self.repository = repository
+
+    async def record(
+        self, data: StockReceiptCreate
+    ) -> tuple[StockReceiptRead, bool]:
+        session = self.repository.session
+
+        try:
+            batch, created = await self.repository.receive_stock(data)
+            result = StockReceiptRead.model_validate(batch)
+            await session.commit()
+            return result, created
+        except Exception:
+            await session.rollback()
+            raise

@@ -3,13 +3,247 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PharmaShelf | Branch studio</title>
+  <title>PharmaShelf | Branch workspace</title>
+
   <link rel="stylesheet" href="./styles.css">
+
+  <style>
+    /* Workspace layout. Colors and form controls use the existing theme. */
+    .studio-header,
+    .studio-shell {
+      width: min(calc(100% - 2rem), 78rem);
+      margin-inline: auto;
+    }
+
+    .studio-header {
+      min-height: 4.5rem;
+    }
+
+    .studio-shell {
+      display: grid;
+      grid-template-columns: 13rem minmax(0, 1fr);
+      align-items: start;
+      gap: clamp(1.25rem, 4vw, 4rem);
+      padding: clamp(1.5rem, 4vw, 3.5rem) 0 4rem;
+    }
+
+    .studio-sidebar {
+      position: sticky;
+      top: 1rem;
+      padding-top: .35rem;
+    }
+
+    .studio-sidebar h1 {
+      margin: 0 0 1.25rem .75rem;
+      font: 600 .82rem/1.4 var(--sans, sans-serif);
+      color: var(--muted);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .studio-tabs {
+      display: grid;
+      gap: .4rem;
+    }
+
+    .studio-tab {
+      display: flex;
+      align-items: center;
+      min-height: 2.9rem;
+      width: 100%;
+      padding: .7rem .9rem;
+      border: 1px solid transparent;
+      border-radius: .65rem;
+      background: transparent;
+      color: var(--muted);
+      text-align: left;
+      font: 600 .98rem/1.3 var(--sans, sans-serif);
+    }
+
+    .studio-tab:hover {
+      color: var(--ink);
+      background: var(--panel);
+    }
+
+    .studio-tab[aria-selected="true"] {
+      color: var(--accent);
+      background: var(--panel);
+      border-color: var(--line);
+      box-shadow: inset 3px 0 var(--accent);
+    }
+
+    .studio-content,
+    .studio-panel,
+    .studio-panel fieldset {
+      min-width: 0;
+    }
+
+    .studio-panel {
+      max-width: 55rem;
+    }
+
+    .studio-panel[hidden] {
+      display: none !important;
+    }
+
+    .studio-intro {
+      margin-bottom: 1.4rem;
+    }
+
+    .studio-intro h2 {
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      letter-spacing: -.05em;
+    }
+
+    .studio-intro p {
+      max-width: 62ch;
+      margin: .6rem 0 0;
+      color: var(--muted);
+    }
+
+    .studio-panel .card {
+      margin: 0;
+      padding: clamp(1rem, 3vw, 2rem);
+    }
+
+    .studio-panel .card > :first-child,
+    .studio-panel form > label:first-child {
+      margin-top: 0;
+    }
+
+    .studio-panel .status:empty,
+    #counter-status:empty,
+    #import-status:empty {
+      display: none;
+    }
+
+    .studio-panel .field-pair {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0 .9rem;
+    }
+
+    .studio-panel .field-pair > label,
+    .studio-panel .date-grid > label {
+      min-width: 0;
+    }
+
+    .studio-panel .field-pair input {
+      display: block;
+      margin-top: .35rem;
+    }
+
+    .studio-panel .report-button {
+      width: auto;
+      min-width: 10rem;
+    }
+
+    .studio-panel #import-fields {
+      max-width: none;
+    }
+
+    .template-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem 1.25rem;
+      margin: .85rem 0 0;
+    }
+
+    .template-links a {
+      color: var(--accent);
+      text-underline-offset: .2em;
+    }
+
+    .import-table-wrap {
+      overflow-x: auto;
+      max-width: 100%;
+    }
+
+    #import-table td {
+      overflow-wrap: anywhere;
+    }
+
+    @media (max-width: 800px) {
+      .studio-shell {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1.4rem;
+        padding-top: 1.15rem;
+      }
+
+      .studio-sidebar {
+        position: static;
+        padding: 0;
+      }
+
+      .studio-sidebar h1 {
+        margin: 0 0 .6rem;
+      }
+
+      .studio-tabs {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .4rem;
+      }
+
+      .studio-tab {
+        justify-content: center;
+        border-color: var(--line);
+        text-align: center;
+      }
+
+      .studio-tab[aria-selected="true"] {
+        box-shadow: inset 0 -2px var(--accent);
+      }
+
+      .studio-panel {
+        max-width: none;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .studio-header,
+      .studio-shell {
+        width: calc(100% - 1.25rem);
+      }
+
+      .studio-header {
+        gap: .5rem;
+      }
+
+      .studio-panel .field-pair,
+      .studio-panel .date-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .studio-panel .report-button,
+      .studio-panel .actions button {
+        width: 100%;
+      }
+
+      .studio-panel .actions {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .studio-panel input,
+      .studio-panel select,
+      .studio-panel textarea {
+        font-size: 1rem;
+      }
+
+      .studio-panel fieldset {
+        margin-inline: 0;
+      }
+    }
+  </style>
+
   <script src="./app.js" defer></script>
+  <script src="./sales-import.js" defer></script>
+  <script src="./counter.js" defer></script>
 </head>
+
 <body>
-  <header class="topbar">
-    <a class="brand" href="#main">
+  <header class="topbar studio-header">
+    <a class="brand" href="#availability" aria-label="PharmaShelf availability">
       <span class="brand-mark" aria-hidden="true">✚</span>
       PharmaShelf
     </a>
@@ -24,130 +258,465 @@
     </label>
   </header>
 
-  <main id="main">
-    <header class="hero">
-      <h1>Medicine <em>availability.</em></h1>
-      <p>Check a medicine at your branch. Pharmacy owners can also review upcoming expiries and sales.</p>
-    </header>
+  <main class="studio-shell">
+    <aside class="studio-sidebar" aria-labelledby="workspace-title">
+      <h1 id="workspace-title">Branch workspace</h1>
 
-    <div class="workspace">
-      <section class="card" aria-labelledby="chat-title">
-        <h2 id="chat-title">Ask PharmaShelf</h2>
-        <p class="intro">Include the medicine name and branch code in your question.</p>
+      <div class="studio-tabs" role="tablist"
+           aria-label="Workspace sections" aria-orientation="vertical">
+        <button class="studio-tab" type="button" role="tab"
+                id="tab-availability" aria-controls="availability"
+                aria-selected="true" tabindex="0">
+          Availability
+        </button>
 
-        <div id="messages" role="log" aria-label="Conversation"></div>
+        <button class="studio-tab" type="button" role="tab"
+                id="tab-reports" aria-controls="reports"
+                aria-selected="false" tabindex="-1">
+          Reports
+        </button>
 
-        <form id="chat-form">
-          <label for="question">Your question</label>
-          <textarea id="question" rows="4" maxlength="2000" required
-            placeholder="Is paracetamol available at DEMO-01?"></textarea>
+        <button class="studio-tab" type="button" role="tab"
+                id="tab-counter" aria-controls="counter"
+                aria-selected="false" tabindex="-1">
+          Counter
+        </button>
 
-          <div class="actions">
-            <span id="chat-status" class="status" role="status"></span>
-            <button type="submit">Send question <span aria-hidden="true">↗</span></button>
-          </div>
-        </form>
+        <button class="studio-tab" type="button" role="tab"
+                id="tab-imports" aria-controls="imports"
+                aria-selected="false" tabindex="-1">
+          Imports
+        </button>
+        <button class="studio-tab" type="button" role="tab" id="tab-almanac"
+                aria-controls="almanac" aria-selected="false" tabindex="-1">Almanac</button>
+      </div>
+    </aside>
+
+    <div class="studio-content">
+
+      <!-- Availability -->
+      <section id="availability" class="studio-panel" role="tabpanel"
+               aria-labelledby="tab-availability">
+        <header class="studio-intro">
+          <h2>Medicine availability</h2>
+          <p>Ask which medicines are available at your branch.</p>
+        </header>
+
+        <div class="card">
+          <div id="messages" role="log" aria-label="Conversation"></div>
+
+          <form id="chat-form">
+            <label for="question">Your question</label>
+            <textarea id="question" rows="4" maxlength="2000" required
+                      placeholder="Is paracetamol available at DEMO-01?"></textarea>
+
+            <div class="actions">
+              <span id="chat-status" class="status" role="status"></span>
+              <button type="submit">Send question</button>
+            </div>
+          </form>
+        </div>
       </section>
 
-      <section class="card owner-card" aria-labelledby="owner-title">
-        <h2 id="owner-title">Owner reports</h2>
-        <p class="intro">Sign in to view inventory and sales for a branch.</p>
+      <!-- Reports -->
+      <section id="reports" class="studio-panel" role="tabpanel"
+               aria-labelledby="tab-reports" hidden>
+        <header class="studio-intro">
+          <h2>Owner reports</h2>
+          <p>Review expiry risk, best sellers, and changes in demand at a branch.</p>
+        </header>
 
-        <form id="report-form">
-          <label for="report-type">Report</label>
-          <select id="report-type">
-            <option value="expiry">Expiry risk · next 30 days</option>
-            <option value="sales">Best sellers</option>
-          </select>
+        <div class="card owner-card">
+          <form id="report-form">
+            <label for="report-type">Report</label>
+            <select id="report-type">
+              <option value="expiry">Expiry risk · next 30 days</option>
+              <option value="sales">Best sellers</option>
+              <option value="trend">Medicine demand trend</option>
+              <option value="spikes">Demand spikes</option>
+            </select>
 
-          <label for="branch">Branch code</label>
-          <input id="branch" value="DEMO-01" maxlength="40" required>
+            <label for="branch">Branch code</label>
+            <input id="branch" value="DEMO-01" maxlength="40" required>
 
-          <fieldset id="sales-fields" hidden disabled>
-            <legend>Sales period</legend>
-            <div class="date-grid">
-              <label>From<input id="start-date" type="date" required></label>
-              <label>To<input id="end-date" type="date" required></label>
+            <fieldset id="sales-fields" hidden disabled>
+              <legend>Report filters</legend>
+
+              <label id="trend-sku-field" hidden>
+                Medicine SKU
+                <input id="trend-sku" maxlength="64"
+                       placeholder="DEMO-PARA-500" disabled>
+              </label>
+
+              <div class="date-grid">
+                <label>From<input id="start-date" type="date" required></label>
+                <label>To<input id="end-date" type="date" required></label>
+              </div>
+
+              <label for="rank">Rank by</label>
+              <select id="rank">
+                <option value="units">Units sold</option>
+                <option value="revenue">Revenue (BDT)</option>
+              </select>
+            </fieldset>
+
+            <div class="field-pair">
+              <label for="owner-email">
+                Owner email
+                <input id="owner-email" type="email" autocomplete="username" required>
+              </label>
+              <label for="owner-password">
+                Password
+                <input id="owner-password" type="password"
+                       autocomplete="current-password" required>
+              </label>
             </div>
 
-            <label for="rank">Rank by</label>
-            <select id="rank">
-              <option value="units">Units sold</option>
-              <option value="revenue">Revenue (BDT)</option>
-            </select>
-          </fieldset>
+            <button class="report-button" type="submit">View report</button>
+          </form>
 
-          <label for="owner-email">Owner email</label>
-          <input id="owner-email" type="email" autocomplete="username" required>
+          <p id="report-status" class="status" role="status"></p>
 
-          <label for="owner-password">Password</label>
-          <input id="owner-password" type="password"
-                 autocomplete="current-password" required>
+          <div id="report-result" hidden>
+            <h3 id="report-title"></h3>
+            <ul id="report-rows"></ul>
+          </div>
+        </div>
+      </section>
 
-          <button class="report-button" type="submit">
-            View report <span aria-hidden="true">→</span>
-          </button>
-        </form>
+      <!-- Counter -->
+      <section id="counter" class="studio-panel" role="tabpanel"
+               aria-labelledby="tab-counter" hidden>
+        <header class="studio-intro">
+          <h2>Pharmacist counter</h2>
+          <p>Record an incoming delivery or sell units from an existing batch.</p>
+        </header>
 
-        <p id="report-status" class="status" role="status"></p>
+        <div class="card">
+          <form id="counter-form">
+            <fieldset id="counter-fields">
+              <legend>Stock entry</legend>
 
-        <div id="report-result" hidden>
-          <h3 id="report-title"></h3>
-          <ul id="report-rows"></ul>
+              <label for="counter-mode">Operation</label>
+              <select id="counter-mode" name="mode">
+                <option value="receipt">Incoming delivery</option>
+                <option value="sale">Record sale</option>
+              </select>
+
+              <fieldset id="delivery-fields">
+                <legend>Delivery details</legend>
+
+                <div class="field-pair">
+                  <label>Branch code
+                    <input name="branch_code" maxlength="40"
+                           placeholder="DEMO-01" required>
+                  </label>
+                  <label>Medicine SKU
+                    <input name="sku" maxlength="64"
+                           placeholder="DEMO-PARA-500" required>
+                  </label>
+                </div>
+
+                <label>Lot number
+                  <input name="lot_number" maxlength="80" required>
+                </label>
+
+                <div class="date-grid">
+                  <label>Received on<input name="received_on" type="date" required></label>
+                  <label>Expires on<input name="expires_on" type="date" required></label>
+                </div>
+
+                <label>Unit cost (BDT)
+                  <input name="unit_cost" type="number" min="0"
+                         max="9999999999.99" step="0.01" required>
+                </label>
+              </fieldset>
+
+              <fieldset id="counter-sale-fields" hidden disabled>
+                <legend>Sale details</legend>
+
+                <label>Batch ID
+                  <input name="batch_id" placeholder="Batch UUID from the delivery receipt"
+                         required>
+                </label>
+
+                <label>Unit sale price (BDT)
+                  <input name="unit_sale_price" type="number" min="0"
+                         max="9999999999.99" step="0.01" required>
+                </label>
+              </fieldset>
+
+              <label>Quantity
+                <input name="quantity" type="number" min="1"
+                       max="2147483647" step="1" required>
+              </label>
+
+              <div class="field-pair">
+                <label>Account email
+                  <input name="email" type="email" autocomplete="username" required>
+                </label>
+                <label>Password
+                  <input name="password" type="password"
+                         autocomplete="current-password" required>
+                </label>
+              </div>
+
+              <button id="counter-submit" class="report-button" type="submit">
+                Record delivery
+              </button>
+            </fieldset>
+          </form>
+
+          <p id="counter-status" role="status"></p>
+        </div>
+      </section>
+
+      <!-- Imports -->
+      <section id="imports" class="studio-panel" role="tabpanel"
+               aria-labelledby="tab-imports" hidden>
+        <header class="studio-intro">
+          <h2>Workbook imports</h2>
+          <p>Preview sales or incoming stock, review flagged rows, then confirm the import.</p>
+          <div class="template-links">
+            <a href="./templates/sales-template.xlsx" download>Download sales template</a>
+            <a href="./templates/stock-template.xlsx" download>Download stock template</a>
+          </div>
+        </header>
+
+        <div class="card import-card">
+          <form id="import-form">
+            <fieldset id="import-fields">
+              <legend>Workbook</legend>
+
+              <label for="import-kind">Workbook type</label>
+              <select id="import-kind">
+                <option value="sales">Sales</option>
+                <option value="stock">Incoming stock</option>
+              </select>
+
+              <label for="import-file">Excel file</label>
+              <input id="import-file" type="file" accept=".xlsx" required>
+
+              <details>
+                <summary>Match my column names</summary>
+                <p class="intro">Enter your Excel heading for each column you renamed.</p>
+                <div id="import-mapping"></div>
+              </details>
+
+              <div class="field-pair">
+                <label for="import-email">
+                  Owner email
+                  <input id="import-email" type="email" autocomplete="username" required>
+                </label>
+                <label for="import-password">
+                  Password
+                  <input id="import-password" type="password"
+                         autocomplete="current-password" required>
+                </label>
+              </div>
+
+              <button class="report-button" type="submit">Preview workbook</button>
+            </fieldset>
+          </form>
+
+          <p id="import-status" role="status"></p>
+
+          <div id="import-result" hidden>
+            <h3 id="import-summary"></h3>
+            <p id="import-totals"></p>
+
+            <div class="import-table-wrap">
+              <table id="import-table">
+                <caption>First 10 valid rows</caption>
+                <thead><tr id="import-headings"></tr></thead>
+                <tbody id="import-rows"></tbody>
+              </table>
+            </div>
+
+            <ul id="import-errors"></ul>
+            <button id="import-confirm" type="button" hidden>Confirm import</button>
+          </div>
+        </div>
+      </section>
+      <section id="almanac" class="studio-panel" role="tabpanel"
+               aria-labelledby="tab-almanac" hidden>
+        <header class="studio-intro">
+          <h2>Branch almanac</h2>
+          <p>Search branch procedures and see the source behind each answer.</p>
+        </header>
+        <div class="card owner-card">
+          <form id="almanac-form" method="post">
+            <label for="almanac-query">Search the almanac</label>
+            <input id="almanac-query" type="search" placeholder="Expiring lots" required>
+            <div class="field-pair">
+              <label>Owner email
+                <input id="almanac-email" type="email" autocomplete="username" required>
+              </label>
+              <label>Password
+                <input id="almanac-password" type="password" autocomplete="current-password" required>
+              </label>
+            </div>
+            <button class="report-button" type="submit">Search almanac</button>
+          </form>
+          <p id="almanac-status" class="status" role="status"></p>
+          <div id="almanac-results"></div>
         </div>
       </section>
     </div>
-
-    <section class="card import-card" aria-labelledby="import-heading">
-  <h2 id="import-heading">Import sales</h2>
-  <p class="intro">
-    Upload a sales workbook to check its rows before recording them.
-    <a href="./templates/sales-template.xlsx" download>Download the Excel template</a>
-  </p>
-
-  <form id="import-form">
-    <fieldset id="import-fields">
-      <legend>Sales workbook</legend>
-
-      <label for="import-file">Excel file</label>
-      <input id="import-file" type="file" accept=".xlsx" required>
-
-      <details>
-        <summary>Match my column names</summary>
-        <p class="intro">Enter the heading from your Sales sheet for each column you renamed.</p>
-        <div id="import-mapping"></div>
-      </details>
-
-      <label for="import-email">Owner email</label>
-      <input id="import-email" type="email" autocomplete="username" required>
-
-      <label for="import-password">Password</label>
-      <input id="import-password" type="password" autocomplete="current-password" required>
-
-      <button class="report-button" type="submit">Preview workbook</button>
-    </fieldset>
-  </form>
-
-  <p id="import-status" role="status"></p>
-
-  <div id="import-result" hidden>
-    <h3 id="import-summary"></h3>
-    <p id="import-totals"></p>
-    <div class="import-table-wrap">
-      <table id="import-table">
-        <caption>First 10 valid rows</caption>
-        <thead>
-          <tr><th>Excel row</th><th>Sale ID</th><th>Units</th><th>Unit price (৳)</th></tr>
-        </thead>
-        <tbody id="import-rows"></tbody>
-      </table>
-    </div>
-    <ul id="import-errors"></ul>
-    <button id="import-confirm" type="button" hidden>Confirm import</button>
-  </div>
-</section>
-
-<script src="./sales-import.js" defer></script>
   </main>
+
+  <script>
+    (() => {
+      const tablist = document.querySelector(".studio-tabs");
+      const tabs = Array.from(tablist.querySelectorAll('[role="tab"]'));
+      const compact = window.matchMedia("(max-width: 800px)");
+
+      function showTab(id) {
+        const selected = tabs.find((tab) => tab.getAttribute("aria-controls") === id)
+          || tabs[0];
+
+        for (const tab of tabs) {
+          const active = tab === selected;
+          const panel = document.getElementById(tab.getAttribute("aria-controls"));
+
+          tab.setAttribute("aria-selected", String(active));
+          tab.tabIndex = active ? 0 : -1;
+          panel.hidden = !active;
+        }
+      }
+
+      function activate(tab) {
+        const id = tab.getAttribute("aria-controls");
+        showTab(id);
+        if (location.hash !== "#" + id) {
+          history.pushState(null, "", "#" + id);
+        }
+      }
+
+      function syncOrientation() {
+        tablist.setAttribute("aria-orientation", compact.matches ? "horizontal" : "vertical");
+      }
+
+      for (const tab of tabs) {
+        tab.addEventListener("click", () => activate(tab));
+      }
+
+      tablist.addEventListener("keydown", (event) => {
+        const index = tabs.indexOf(event.target);
+        if (index < 0) return;
+
+        let next;
+        switch (event.key) {
+          case "Home":
+            next = 0;
+            break;
+          case "End":
+            next = tabs.length - 1;
+            break;
+          case "ArrowRight":
+            if (!compact.matches) return;
+            next = (index + 1) % tabs.length;
+            break;
+          case "ArrowLeft":
+            if (!compact.matches) return;
+            next = (index - 1 + tabs.length) % tabs.length;
+            break;
+          case "ArrowDown":
+            next = (index + (compact.matches ? 2 : 1)) % tabs.length;
+            break;
+          case "ArrowUp":
+            next = (index - (compact.matches ? 2 : 1) + tabs.length) % tabs.length;
+            break;
+          default:
+            return;
+        }
+
+        event.preventDefault();
+        tabs[next].focus();
+        activate(tabs[next]);
+      });
+
+      compact.addEventListener("change", syncOrientation);
+      window.addEventListener("hashchange", () => showTab(location.hash.slice(1)));
+      window.addEventListener("popstate", () => showTab(location.hash.slice(1)));
+
+      syncOrientation();
+      showTab(location.hash.slice(1));
+    })();
+  </script>
+  <script>
+    (() => {
+      const form = document.getElementById("almanac-form");
+      const status = document.getElementById("almanac-status");
+      const results = document.getElementById("almanac-results");
+      const button = form.querySelector("button");
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (button.disabled) return;
+
+        const q = document.getElementById("almanac-query").value.trim();
+        results.replaceChildren();
+        if (!q) {
+          status.textContent = "Enter a word or phrase.";
+          return;
+        }
+
+        const password = document.getElementById("almanac-password");
+        const credentials = new URLSearchParams({
+          username: document.getElementById("almanac-email").value.trim(),
+          password: password.value
+        });
+
+        password.value = "";
+        button.disabled = true;
+        status.textContent = "Searching…";
+
+        try {
+          const login = await fetch("/api/v1/auth/login", {
+            method: "POST",
+            body: credentials
+          });
+          if (login.status === 401) throw new Error("Check your email and password.");
+          if (!login.ok) throw new Error("Sign-in failed (HTTP " + login.status + ").");
+
+          const { access_token } = await login.json();
+          if (!access_token) throw new Error("Sign in again.");
+
+          const query = new URLSearchParams({ q, limit: "3" });
+          const response = await fetch("/api/v1/almanac/search?" + query, {
+            headers: { Authorization: "Bearer " + access_token },
+            cache: "no-store"
+          });
+          if (response.status === 403) throw new Error("An owner account is required.");
+          if (!response.ok) throw new Error("Search failed (HTTP " + response.status + ").");
+
+          const hits = await response.json();
+          if (!Array.isArray(hits)) throw new Error("Unexpected search response.");
+
+          for (const hit of hits) {
+            const article = document.createElement("article");
+            const title = document.createElement("h3");
+            const body = document.createElement("p");
+            const source = document.createElement("small");
+
+            title.textContent = hit.title;
+            body.textContent = hit.content;
+            source.textContent = "Source: " + hit.source_note;
+            article.append(title, body, source);
+            results.append(article);
+          }
+
+          status.textContent = hits.length
+            ? hits.length + (hits.length === 1 ? " match" : " matches") + " for “" + q + "”."
+            : "No matches for “" + q + "”. Try another term.";
+        } catch (error) {
+          status.textContent = error.message;
+        } finally {
+          button.disabled = false;
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

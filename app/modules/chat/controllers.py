@@ -5,9 +5,11 @@ from google.genai import errors
 
 from app.modules.chat.dependencies import CustomerChatServiceDep
 from app.modules.chat.schemas import ChatRequest, ChatResponse
+from app.modules.chat.owner import router as owner_router
 
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
+router.include_router(owner_router)
 
 
 @router.post("", response_model=ChatResponse)
@@ -27,3 +29,5 @@ async def chat(data: ChatRequest, service: CustomerChatServiceDep) -> ChatRespon
         ) from None
 
     return ChatResponse.model_validate(result)
+
+
