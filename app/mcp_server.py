@@ -2,6 +2,7 @@ import json
 from argparse import ArgumentParser
 
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 
 from app.db.session import SessionLocal
 from app.modules.chat.dependencies import get_customer_catalog_tools
@@ -9,7 +10,27 @@ from app.modules.inventory.dependencies import get_inventory_service
 from app.modules.medicines.dependencies import get_medicine_service
 
 
-mcp = FastMCP("PharmaShelf", stateless_http=True, json_response=True)
+mcp = FastMCP(
+    "PharmaShelf",
+    stateless_http=True,
+    json_response=True,
+    transport_security=TransportSecuritySettings(
+        enable_dns_rebinding_protection=True,
+        allowed_hosts=[
+            "pharmashelf.onrender.com",
+            "pharmashelf.onrender.com:443",
+            "127.0.0.1:*",
+            "localhost:*",
+            "[::1]:*",
+        ],
+        allowed_origins=[
+            "https://pharmashelf.onrender.com",
+            "http://127.0.0.1:*",
+            "http://localhost:*",
+            "http://[::1]:*",
+        ],
+    ),
+)
 
 
 def catalog_tools(session):
