@@ -9,7 +9,9 @@ from app.db.base import Base
 
 
 class SaleLine(Base):
+
     __tablename__ = "sale_lines"
+
     __table_args__ = (
         CheckConstraint("quantity > 0", name="ck_sale_line_quantity_positive"),
         CheckConstraint(
@@ -17,6 +19,7 @@ class SaleLine(Base):
             name="ck_sale_line_price_nonnegative",
         ),
     )
+    
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     batch_id: Mapped[UUID] = mapped_column(

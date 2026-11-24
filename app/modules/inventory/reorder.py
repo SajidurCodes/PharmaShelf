@@ -13,10 +13,13 @@ from app.modules.medicines.models import Medicine
 from app.modules.sales.models import SaleLine
 
 
+
+
 DHAKA = ZoneInfo("Asia/Dhaka")
 SALES_WINDOW_DAYS = 30
 DEAD_STOCK_DAYS = 60
 LOW_STOCK_DAYS = 7
+
 
 StockStatus = Literal[
     "out_of_stock",
@@ -35,7 +38,11 @@ STATUS_ORDER = {
 }
 
 
+
+
+
 class ReorderItem(BaseModel):
+
     sku: str
     medicine_name: str
     usable_units: int
@@ -45,7 +52,9 @@ class ReorderItem(BaseModel):
     suggested_action: str
 
 
+
 class ReorderReport(BaseModel):
+
     branch_code: str
     as_of: date
     sales_window_start: date
@@ -61,42 +70,42 @@ def assess_stock(
     first_received: date,
     history_start: date,
 ) -> tuple[StockStatus, Decimal | None, str]:
+
+    
     days_left = None
 
     if units_sold_30d > 0:
-        days_left = (
-            Decimal(usable_units) * SALES_WINDOW_DAYS / units_sold_30d
-        ).quantize(Decimal("0.1"))
+
+        days_left = (Decimal(usable_units) * SALES_WINDOW_DAYS / units_sold_30d).quantize(Decimal("0.1"))
+
 
     if usable_units == 0:
-        action = (
-            "Review recent sales and supplier lead time before placing a reorder."
-            if units_sold_30d > 0
-            else "Check whether this branch still needs to carry this medicine."
-        )
+
+        action = ("Review recent sales and supplier lead time before placing a reorder." if units_sold_30d > 0
+            else "Check whether this branch still needs to carry this medicine.")
+
+        
         return "out_of_stock", days_left, action
 
+    
+
     if first_received <= history_start and units_sold_60d == 0:
-        return (
-            "dead_stock",
-            None,
-            "Pause reordering and review expiry dates and supplier return options.",
-        )
+
+
+        return ("dead_stock",None,"Pause reordering and review expiry dates and supplier return options.",)
+
+
 
     if units_sold_30d == 0:
-        return (
-            "no_recent_sales",
-            None,
-            "Review sales history before deciding how much to reorder.",
-        )
 
-    # Compare before rounding so 7.04 days does not trigger a 7-day alert.
+        return ("no_recent_sales",None,"Review sales history before deciding how much to reorder.",)
+
+
+
+    
     if usable_units * SALES_WINDOW_DAYS <= units_sold_30d * LOW_STOCK_DAYS:
-        return (
-            "running_low",
-            days_left,
-            "Check the next delivery date. Current stock covers a week or less.",
-        )
+
+        return ("running_low",days_left,"Check the next delivery date. Current stock covers a week or less.")
 
     return "in_stock", days_left, "Continue monitoring stock and sales."
 
@@ -115,8 +124,7 @@ async def get_reorder_report(
     if branch_id is None:
         raise NotFoundError("Branch was not found")
 
-    # Keep depleted and expired batches in the branch history. Only usable
-    # batches contribute to the current balance.
+  
     inventory = (
         select(
             StockBatch.medicine_id,
@@ -140,8 +148,7 @@ async def get_reorder_report(
     start_30 = datetime.combine(sales_start, time.min, tzinfo=DHAKA)
     stop = datetime.combine(today, time.min, tzinfo=DHAKA)
 
-    # Aggregate sales separately so a batch with several sales contributes
-    # its remaining balance only once.
+ 
     sales = (
         select(
             StockBatch.medicine_id,
@@ -161,6 +168,8 @@ async def get_reorder_report(
         .subquery()
     )
 
+
+
     statement = (
         select(
             Medicine.sku,
@@ -174,6 +183,8 @@ async def get_reorder_report(
         .join(Medicine, Medicine.id == inventory.c.medicine_id)
         .outerjoin(sales, sales.c.medicine_id == inventory.c.medicine_id)
     )
+
+
 
     items = []
     for row in (await session.execute(statement)).mappings():

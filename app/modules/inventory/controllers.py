@@ -14,34 +14,31 @@ from app.modules.inventory.schemas import (
 )
 
 
+
+
 router = APIRouter(prefix="/inventory", tags=["Inventory"])
 
 BranchCode = Annotated[str, Query(min_length=1, max_length=40)]
 
 
 @router.get("/availability", response_model=AvailabilityRead)
-async def get_availability(
-    service: InventoryServiceDep,
-    sku: Annotated[str, Query(min_length=1, max_length=64)],
-    branch_code: BranchCode,
+async def get_availability(service: InventoryServiceDep,sku: Annotated[str, Query(min_length=1, max_length=64)],branch_code: BranchCode,
 ) -> AvailabilityRead:
+
+    
     result = await service.get_availability(sku, branch_code)
+
     if result is None:
+
         raise HTTPException(status_code=404, detail="Unknown medicine or branch")
+    
 
     return result
 
 
-@router.get(
-    "/expiry-rescue",
-    response_model=ExpiryRescueReport,
-    dependencies=[Depends(require_admin)],
-)
-async def expiry_rescue(
-    service: InventoryServiceDep,
-    branch_code: BranchCode,
-    days: Annotated[int, Query(ge=1, le=60)] = 30,
-) -> ExpiryRescueReport:
+@router.get("/expiry-rescue",response_model=ExpiryRescueReport,dependencies=[Depends(require_admin)])
+async def expiry_rescue(service: InventoryServiceDep,branch_code: BranchCode,days: Annotated[int, Query(ge=1, le=60)] = 30) -> ExpiryRescueReport:
+    
     return await service.expiry_rescue(branch_code.strip(), days)
 
 
@@ -55,8 +52,13 @@ async def expiry_rescue(
             "description": "Previously recorded delivery",
         }
     },
+
+
     dependencies=[Depends(require_inventory_staff)],
+
 )
+
+
 async def record_stock_receipt(
     data: StockReceiptCreate,
     response: Response,
@@ -69,13 +71,7 @@ async def record_stock_receipt(
     return receipt
 
 
-@router.get(
-    "/reorder",
-    response_model=ReorderReport,
-    dependencies=[Depends(require_admin)],
-)
-async def reorder_report(
-    session: SessionDep,
-    branch_code: BranchCode,
-) -> ReorderReport:
+
+@router.get("/reorder",response_model=ReorderReport,dependencies=[Depends(require_admin)])
+async def reorder_report(session: SessionDep,branch_code: BranchCode,) -> ReorderReport:
     return await get_reorder_report(session, branch_code.strip())

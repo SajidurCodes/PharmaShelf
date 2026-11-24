@@ -5,7 +5,20 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import URL
 from pydantic import Field, SecretStr
 
+
+
+
+
+
+
+
+
+
+
+
 class Settings(BaseSettings):
+
+
     APP_NAME: str = "PharmaShelf"
     DEBUG: bool = False
 
@@ -19,11 +32,16 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: SecretStr = Field(min_length=1)
     GEMINI_MODEL: str = Field(min_length=1)
 
+
+
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
     )
+
+
 
     @property
     def DATABASE_URL(self) -> URL:
@@ -35,6 +53,8 @@ class Settings(BaseSettings):
             port=self.DB_PORT,
             database=self.DB_NAME,
         )
+
+
 
 
 @lru_cache

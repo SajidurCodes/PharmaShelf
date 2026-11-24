@@ -21,9 +21,13 @@ from app.core.exceptions.handlers import (
 from app.mcp_server import mcp
 
 
+
+
 settings = get_settings()
 frontend_dir = Path(__file__).resolve().parent / "frontend"
+
 mcp_http_app = mcp.streamable_http_app()
+
 
 
 @asynccontextmanager
@@ -32,11 +36,14 @@ async def lifespan(app: FastAPI):
         yield
 
 
+
 app = FastAPI(
     title=settings.APP_NAME,
     debug=settings.DEBUG,
     lifespan=lifespan,
 )
+
+
 
 app.add_exception_handler(ConflictError, handle_conflict)
 app.add_exception_handler(ForbiddenError, handle_forbidden)

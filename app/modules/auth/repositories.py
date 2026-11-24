@@ -7,8 +7,10 @@ from app.modules.auth.models import User
 
 
 class UserRepository:
+
     def __init__(self, session: AsyncSession):
         self.session = session
+
 
     async def create_customer(self, email: str, password_hash: str) -> User | None:
         statement = (

@@ -1,7 +1,5 @@
 from typing import Annotated
-
 from fastapi import APIRouter, Depends, Query, status
-
 from app.db.session import SessionDep
 from app.modules.almanac.dependencies import AlmanacServiceDep
 from app.modules.almanac.schemas import (
@@ -14,6 +12,8 @@ from app.modules.almanac.search import AlmanacSearchHit, search_almanac
 from app.modules.auth.dependencies import require_admin
 
 
+
+
 router = APIRouter(
     prefix="/almanac",
     tags=["Almanac"],
@@ -21,16 +21,14 @@ router = APIRouter(
 )
 
 
-@router.post(
-    "",
-    response_model=AlmanacEntryRead,
-    status_code=status.HTTP_201_CREATED,
-)
+@router.post("",response_model=AlmanacEntryRead,status_code=status.HTTP_201_CREATED,)
 async def create_entry(
     data: AlmanacEntryCreate,
     service: AlmanacServiceDep,
 ) -> AlmanacEntryRead:
+    
     return await service.create(data)
+
 
 
 @router.get("", response_model=list[AlmanacEntryRead])
@@ -47,6 +45,7 @@ async def list_entries(
     )
 
 
+
 @router.get("/search", response_model=list[AlmanacSearchHit])
 async def search_entries(
     session: SessionDep,
@@ -56,12 +55,14 @@ async def search_entries(
     return await search_almanac(session, q, limit=limit)
 
 
+
 @router.get("/{slug}", response_model=AlmanacEntryRead)
 async def get_entry(
     slug: EntrySlug,
     service: AlmanacServiceDep,
 ) -> AlmanacEntryRead:
     return await service.get_by_slug(slug)
+
 
 
 @router.patch("/{slug}", response_model=AlmanacEntryRead)

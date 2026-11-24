@@ -16,8 +16,12 @@ class Branch(Base):
     name: Mapped[str] = mapped_column(String(160))
 
 
+
+
 class StockBatch(Base):
+
     __tablename__ = "stock_batches"
+
     __table_args__ = (
         CheckConstraint("quantity_received > 0", name="ck_batch_received_positive"),
         CheckConstraint(
@@ -27,10 +31,13 @@ class StockBatch(Base):
         CheckConstraint("unit_cost >= 0", name="ck_batch_unit_cost_nonnegative"),
     )
 
+
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+
     medicine_id: Mapped[UUID] = mapped_column(
         ForeignKey("medicines.id"), index=True
     )
+    
     branch_id: Mapped[UUID] = mapped_column(
         ForeignKey("branches.id"), index=True
     )

@@ -6,12 +6,14 @@ from app.modules.almanac.models import AlmanacEntry
 from app.modules.almanac.schemas import AlmanacEntryCreate, AlmanacEntryUpdate
 
 
+
+
 class AlmanacRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
     async def create(self, data: AlmanacEntryCreate) -> AlmanacEntry | None:
-        """Return the new entry, or None if the slug is already in use."""
+        
         statement = (
             insert(AlmanacEntry)
             .values(**data.model_dump())
@@ -20,12 +22,10 @@ class AlmanacRepository:
         )
         return await self.session.scalar(statement)
 
-    async def get_by_slug(
-        self,
-        slug: str,
-        *,
-        active_only: bool = False,
-    ) -> AlmanacEntry | None:
+    
+
+    async def get_by_slug(self,slug: str,*,active_only: bool = False,) -> AlmanacEntry | None:
+
         statement = select(AlmanacEntry).where(AlmanacEntry.slug == slug)
 
         if active_only:
@@ -33,14 +33,9 @@ class AlmanacRepository:
 
         return await self.session.scalar(statement)
 
-    async def list_entries(
-        self,
-        *,
-        topic: str | None = None,
-        active_only: bool = False,
-        limit: int = 50,
-        offset: int = 0,
-    ) -> list[AlmanacEntry]:
+    async def list_entries(self,*,topic: str | None = None,active_only: bool = False,limit: int = 50,offset: int = 0,) -> list[AlmanacEntry]:
+
+
         statement = select(AlmanacEntry)
 
         if topic is not None:
@@ -59,25 +54,19 @@ class AlmanacRepository:
         entries = await self.session.scalars(statement)
         return list(entries)
 
-    async def list_active(
-        self,
-        *,
-        topic: str | None = None,
-        limit: int = 50,
-        offset: int = 0,
-    ) -> list[AlmanacEntry]:
+    async def list_active(self,*,topic: str | None = None,limit: int = 50,offset: int = 0,) -> list[AlmanacEntry]:
+
+
         return await self.list_entries(
             topic=topic,
             active_only=True,
             limit=limit,
             offset=offset,
         )
+    
 
-    async def update_by_slug(
-        self,
-        slug: str,
-        data: AlmanacEntryUpdate,
-    ) -> AlmanacEntry | None:
+    async def update_by_slug(self,slug: str,data: AlmanacEntryUpdate,) -> AlmanacEntry | None:
+        
         changes = data.model_dump(exclude_unset=True)
 
         statement = (

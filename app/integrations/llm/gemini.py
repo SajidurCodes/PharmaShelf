@@ -4,7 +4,10 @@ from google.genai import types
 from app.core.config import get_settings
 
 
+
+
 class GeminiProvider:
+
     async def chat_with_tools(
         self,
         question,
@@ -13,6 +16,8 @@ class GeminiProvider:
         run_tool,
         history=(),
     ):
+
+        
         settings = get_settings()
         contents = []
 
@@ -25,12 +30,16 @@ class GeminiProvider:
                 )
             )
 
+
+
         contents.append(
             types.Content(
                 role="user",
                 parts=[types.Part.from_text(text=question)],
             )
         )
+
+
 
         config = types.GenerateContentConfig(
             system_instruction=system_prompt,
@@ -41,6 +50,8 @@ class GeminiProvider:
         )
 
         tool_calls = []
+
+
 
         async with genai.Client(
             api_key=settings.GEMINI_API_KEY.get_secret_value()
@@ -83,6 +94,8 @@ class GeminiProvider:
         raise RuntimeError("Gemini exceeded the tool-call round limit")
     
 
+
+
     async def answer_from_passages(self, question: str, evidence: str) -> str:
         settings = get_settings()
         config = types.GenerateContentConfig(
@@ -99,6 +112,8 @@ class GeminiProvider:
             ),
             temperature=0,
         )
+
+        
 
         async with genai.Client(
             api_key=settings.GEMINI_API_KEY.get_secret_value()

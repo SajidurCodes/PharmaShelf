@@ -13,13 +13,20 @@ from app.modules.medicines.models import Medicine
 from app.modules.sales.models import SaleLine
 
 
+
+
+
 class DailyDemand(BaseModel):
+
     day: date
     units: int
     revenue_bdt: Decimal
 
 
+
+
 class DemandTrend(BaseModel):
+
     branch_code: str
     sku: str
     medicine_name: str
@@ -36,14 +43,15 @@ class DemandTrend(BaseModel):
     days: list[DailyDemand]
 
 
-async def daily_sales(
-    session: AsyncSession,
-    branch_id: UUID,
+async def daily_sales(session: AsyncSession,branch_id: UUID,
     medicine_id: UUID,
     start: datetime,
     stop: datetime,
 ) -> dict[date, DailyDemand]:
     local_day = cast(func.timezone("Asia/Dhaka", SaleLine.sold_at), Date)
+
+
+
 
     statement = (
         select(
@@ -61,34 +69,49 @@ async def daily_sales(
         )
         .group_by(local_day)
     )
+
+
     rows = (await session.execute(statement)).mappings()
+
     return {row["day"]: DailyDemand.model_validate(row) for row in rows}
 
 
-async def get_demand_trend(
-    session: AsyncSession,
-    branch_code: str,
-    sku: str,
-    start_date: date,
-    end_date: date,
+
+async def get_demand_trend(session: AsyncSession,branch_code: str,sku: str,start_date: date,end_date: date,
 ) -> DemandTrend:
+
+
     length = (end_date - start_date).days + 1
+
     if not 1 <= length <= 366:
+
         raise ValueError("Choose a period between 1 and 366 days")
+    
     if start_date.toordinal() <= length or end_date == date.max:
+
         raise ValueError("Choose dates that allow a preceding comparison period")
+    
 
     branch_id = await session.scalar(select(Branch.id).where(Branch.code == branch_code))
+
     if branch_id is None:
+
         raise NotFoundError("Branch was not found")
+    
 
     medicine = await session.scalar(select(Medicine).where(Medicine.sku == sku))
+
     if medicine is None:
+
         raise NotFoundError("Medicine was not found")
 
+
     previous_start = start_date - timedelta(days=length)
+
     previous_end = start_date - timedelta(days=1)
+
     dhaka = ZoneInfo("Asia/Dhaka")
+
 
     daily = await daily_sales(
         session,
@@ -98,18 +121,30 @@ async def get_demand_trend(
         datetime.combine(end_date + timedelta(days=1), time.min, tzinfo=dhaka),
     )
 
+
     days = []
+
     for offset in range(length):
+
         day = start_date + timedelta(days=offset)
+
         days.append(daily.get(day) or DailyDemand(day=day, units=0, revenue_bdt=Decimal("0.00")))
 
+
     previous = [entry for day, entry in daily.items() if day < start_date]
+
     units = sum(entry.units for entry in days)
+
     previous_units = sum(entry.units for entry in previous)
+
     change = units - previous_units
+
     percent = None
+
     if previous_units:
+
         percent = (Decimal(change) * 100 / previous_units).quantize(Decimal("0.1"))
+        
 
     return DemandTrend(
         branch_code=branch_code,

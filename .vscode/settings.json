@@ -2,7 +2,12 @@
     "cSpell.words": [
         "drivername",
         "fastmcp",
+        "genai",
+        "ondelete",
+        "onupdate",
+        "pgvector",
         "pharmashelf",
+        "sheetnames",
         "streamable"
     ]
 }

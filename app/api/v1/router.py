@@ -1,5 +1,4 @@
 from fastapi import APIRouter
-
 from app.api.health import router as health_router
 from app.modules.almanac.controllers import router as almanac_router
 from app.modules.medicines.controllers import router as medicines_router

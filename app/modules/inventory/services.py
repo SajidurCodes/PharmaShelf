@@ -14,7 +14,11 @@ from app.modules.inventory.schemas import (
 )
 
 
+
+
+
 class InventoryService:
+
     def __init__(self, repository: InventoryRepository):
         self.repository = repository
 
@@ -31,30 +35,48 @@ class InventoryService:
 
 
     async def expiry_rescue(self, branch_code: str, days: int) -> ExpiryRescueReport:
+
+
         branch = await self.repository.get_branch_by_code(branch_code)
+
         if branch is None:
             raise NotFoundError(f"Branch '{branch_code}' was not found")
 
         today = datetime.now(ZoneInfo("Asia/Dhaka")).date()
+
         cutoff = today + timedelta(days=days)
+
         rows = await self.repository.expiring_batches(branch, today, cutoff)
+
 
         batches = []
         total = Decimal("0.00")
 
         for batch, sku, medicine_name in rows:
+
             days_left = (batch.expires_on - today).days
+
             value = batch.quantity_remaining * batch.unit_cost
 
+
             if days_left <= 14:
+
                 urgency = "within_14_days"
+
                 action = "Review this lot today and check supplier return options."
+
             elif days_left <= 30:
+
                 urgency = "within_30_days"
+
                 action = "Prioritize this lot when fulfilling existing demand."
+
             else:
+
                 urgency = "within_60_days"
+
                 action = "Review remaining stock before placing the next order."
+
 
             batches.append(
                 ExpiryBatchRead(
@@ -70,7 +92,9 @@ class InventoryService:
                     suggested_action=action,
                 )
             )
+
             total += value
+
 
         return ExpiryRescueReport(
             branch_code=branch.code,
@@ -81,20 +105,27 @@ class InventoryService:
         )
 
 
+
 class StockReceiptService:
+
     def __init__(self, repository: InventoryRepository):
+
         self.repository = repository
+
 
     async def record(
         self, data: StockReceiptCreate
     ) -> tuple[StockReceiptRead, bool]:
         session = self.repository.session
 
+
         try:
+
             batch, created = await self.repository.receive_stock(data)
             result = StockReceiptRead.model_validate(batch)
             await session.commit()
             return result, created
+        
         except Exception:
             await session.rollback()
             raise

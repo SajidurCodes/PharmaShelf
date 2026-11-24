@@ -37,26 +37,28 @@ class SpikeReport(BaseModel):
     alerts: list[DemandSpike]
 
 
-async def get_demand_spikes(
-    session: AsyncSession,
-    branch_code: str,
-) -> SpikeReport:
-    """Compare the last seven completed days with the preceding four weeks."""
+async def get_demand_spikes(session: AsyncSession,branch_code: str,) -> SpikeReport:
+
+    
     today = datetime.now(DHAKA).date()
+
     recent_start = today - timedelta(days=WEEK_DAYS)
+
     baseline_start = recent_start - timedelta(weeks=BASELINE_WEEKS)
 
-    branch_id = await session.scalar(
-        select(Branch.id).where(Branch.code == branch_code)
-    )
+
+    branch_id = await session.scalar(select(Branch.id).where(Branch.code == branch_code))
+
     if branch_id is None:
+
         raise NotFoundError("Branch was not found")
 
     baseline_at = datetime.combine(baseline_start, time.min, tzinfo=DHAKA)
     recent_at = datetime.combine(recent_start, time.min, tzinfo=DHAKA)
     stop_at = datetime.combine(today, time.min, tzinfo=DHAKA)
 
-    # A newly introduced medicine does not yet have a full comparison period.
+
+    
     established_medicines = (
         select(StockBatch.medicine_id)
         .where(
@@ -103,11 +105,15 @@ async def get_demand_spikes(
         )
     )
 
+
+
     rows = (await session.execute(statement)).mappings()
     alerts = []
 
     for row in rows:
+
         average = Decimal(row["baseline_units"]) / BASELINE_WEEKS
+
         multiple = Decimal(row["recent_units"]) / average
 
         alerts.append(
@@ -121,7 +127,9 @@ async def get_demand_spikes(
             )
         )
 
+
     alerts.sort(key=lambda alert: (-alert.multiple, -alert.recent_units, alert.sku))
+    
 
     return SpikeReport(
         branch_code=branch_code,

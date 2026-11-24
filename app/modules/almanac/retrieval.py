@@ -16,14 +16,13 @@ class AlmanacPassage(BaseModel):
     similarity: float
 
 
-async def retrieve_passages(
-    session: AsyncSession,
-    question: str,
-    *,
-    limit: int = 3,
-    min_similarity: float = 0.65,
-) -> list[AlmanacPassage]:
+
+
+async def retrieve_passages(session: AsyncSession,question: str,*,limit: int = 3,min_similarity: float = 0.65,) -> list[AlmanacPassage]:
+    
+    
     question = question.strip()
+
     if not question:
         return []
     if not 1 <= limit <= 10:
@@ -31,9 +30,11 @@ async def retrieve_passages(
     if not -1 <= min_similarity <= 1:
         raise ValueError("min_similarity must be between -1 and 1")
 
-    # Use the same embedding service and dimensions as ingestion.
+
+    
     vectors = await asyncio.to_thread(embed, [question])
     distance = AlmanacChunk.embedding.cosine_distance(vectors[0])
+
 
     statement = (
         select(
@@ -52,6 +53,8 @@ async def retrieve_passages(
         .order_by(distance, AlmanacEntry.slug, AlmanacChunk.chunk_index)
         .limit(limit)
     )
+
+
 
     rows = (await session.execute(statement)).mappings()
     return [

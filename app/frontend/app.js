@@ -13,9 +13,7 @@
   try {
     const saved = localStorage.getItem("pharmashelf-theme");
     if (["dark", "dim", "light"].includes(saved)) theme.value = saved;
-  } catch {
-    // Storage may be disabled in a private browser session.
-  }
+  } catch {}
 
   document.documentElement.dataset.theme = theme.value;
 
@@ -23,9 +21,7 @@
     document.documentElement.dataset.theme = theme.value;
     try {
       localStorage.setItem("pharmashelf-theme", theme.value);
-    } catch {
-      // The selection still applies for this visit.
-    }
+    } catch {}
   });
 
   async function responseError(response, fallback) {
@@ -50,6 +46,7 @@
   }
 
   // Customer availability chat
+
   const chatForm = byId("chat-form");
   const question = byId("question");
   const chatStatus = byId("chat-status");

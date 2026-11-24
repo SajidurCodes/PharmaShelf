@@ -80,13 +80,6 @@ async def demand_trend(
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
-@router.get(
-    "/demand-spikes",
-    response_model=SpikeReport,
-    dependencies=[Depends(require_admin)],
-)
-async def demand_spikes(
-    session: SessionDep,
-    branch_code: Annotated[str, Query(min_length=1, max_length=40)],
-) -> SpikeReport:
+@router.get("/demand-spikes",response_model=SpikeReport,dependencies=[Depends(require_admin)],)
+async def demand_spikes(session: SessionDep,branch_code: Annotated[str, Query(min_length=1, max_length=40)],) -> SpikeReport:
     return await get_demand_spikes(session, branch_code.strip())

@@ -3,6 +3,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class MedicineRead(BaseModel):
+
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
@@ -15,6 +16,7 @@ class MedicineRead(BaseModel):
 
 
 class MedicineCreate(BaseModel):
+
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     sku: str = Field(min_length=1, max_length=64)
@@ -26,6 +28,7 @@ class MedicineCreate(BaseModel):
 
 
 class MedicineUpdate(BaseModel):
+    
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     name: str | None = Field(default=None, min_length=1, max_length=160)

@@ -12,10 +12,13 @@ from app.modules.medicines.schemas import MedicineCreate, MedicineUpdate
 
 
 class MedicineRepository:
+
     def __init__(self, session: AsyncSession):
+
         self.session = session
 
     async def search(self, query: str, limit: int) -> list[Medicine]:
+
         statement = select(Medicine)
 
         if query:
@@ -27,9 +30,12 @@ class MedicineRepository:
                 )
             )
 
+
         statement = statement.order_by(Medicine.name, Medicine.sku).limit(limit)
         result = await self.session.scalars(statement)
         return list(result)
+
+
 
     async def create(self, data: MedicineCreate) -> Medicine | None:
         statement = (
@@ -39,6 +45,8 @@ class MedicineRepository:
             .returning(Medicine)
         )
 
+
+
         medicine = await self.session.scalar(statement)
         await self.session.commit()
         return medicine
@@ -46,6 +54,7 @@ class MedicineRepository:
     async def get_by_sku(self, sku: str) -> Medicine | None:
         statement = select(Medicine).where(Medicine.sku == sku)
         return await self.session.scalar(statement)
+
 
 
     async def update_by_sku(self, sku: str, data: MedicineUpdate) -> Medicine | None:
@@ -58,9 +67,12 @@ class MedicineRepository:
             .returning(Medicine)
         )
 
+
+
         medicine = await self.session.scalar(statement)
         await self.session.commit()
         return medicine
+
 
 
     async def delete_by_sku(self, sku: str) -> bool:
@@ -69,6 +81,7 @@ class MedicineRepository:
             .where(Medicine.sku == sku)
             .returning(Medicine.id)
         )
+
 
         try:
             deleted_id = await self.session.scalar(statement)

@@ -18,6 +18,8 @@ EntryTopic = Annotated[str, Field(min_length=1, max_length=80)]
 EntryText = Annotated[str, Field(min_length=1)]
 
 
+
+
 class AlmanacEntryCreate(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 

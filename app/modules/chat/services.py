@@ -30,12 +30,18 @@ CUSTOMER_TOOLS = [
 ]
 
 
+
+
 class CustomerChatService:
+
     def __init__(self, provider: GeminiProvider, tools: CustomerCatalogTools):
+
         self.provider = provider
         self.tools = tools
 
+
     async def run_tool(self, name: str, args: dict) -> dict:
+        
         if name == "search_medicines":
             query = args.get("query")
             if isinstance(query, str) and query.strip():
@@ -49,9 +55,9 @@ class CustomerChatService:
 
         return {"error": "Unknown tool or invalid arguments"}
 
-    async def ask(
-        self, question: str, history: list[ChatMessage] | None = None
-    ) -> dict:
+
+    async def ask(self, question: str, history: list[ChatMessage] | None = None) -> dict:
+
         return await self.provider.chat_with_tools(
             question=question,
             system_prompt=CUSTOMER_SYSTEM_PROMPT,

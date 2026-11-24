@@ -14,7 +14,11 @@ from sqlalchemy import CheckConstraint, ForeignKey, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 
+
+
+
 class AlmanacEntry(Base):
+
     __tablename__ = "almanac_entries"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
@@ -49,6 +53,7 @@ class AlmanacChunk(Base):
     )
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    
     entry_id: Mapped[UUID] = mapped_column(
         ForeignKey("almanac_entries.id", ondelete="CASCADE"),
     )

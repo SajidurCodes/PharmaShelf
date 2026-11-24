@@ -9,7 +9,6 @@
   const button = document.getElementById("counter-submit");
   const status = document.getElementById("counter-status");
 
-  // Keep the same ID when retrying the same entry after a connection error.
   let pendingKey = "";
   let pendingId = "";
 
