@@ -2,229 +2,77 @@
 
 *Know what to stock before the shelf is empty.*
 
-PharmaShelf is a stock and sales assistant for independent pharmacies in Bangladesh. A customer can ask whether a medicine is available at a branch. An owner can review sales, find batches nearing expiry, import Excel records, and ask questions about pharmacy operations with answers grounded in the PharmaShelf Almanac.
+[Open the live PharmaShelf Studio](https://pharmashelf.onrender.com/studio/) · [Explore the API in Swagger](https://pharmashelf.onrender.com/docs)
 
-For example, if a lot has 17 units left at a unit cost of ৳3.50, the expiry report shows **৳59.50 at risk**. The owner can use that figure alongside the expiry date and sales pace to decide which lot to review first.
+## One owner, two branches, one stock decision
 
+Imagine you own two neighborhood pharmacies in Bangladesh. At the second branch, a customer asks, “Do you have paracetamol?” The pharmacist sells the last strip. The notebook captures that sale. Tomorrow, when another customer walks away empty-handed, there may be no entry at all.
 
+One shelf down, a different lot is barely moving. In one PharmaShelf demo report, **17 units had 14 days left before expiry**. At **৳3.50 per unit**, that put **৳59.50 of stock at risk**. The owner still had time to move the lot forward, check recent sales, or ask the supplier about an exchange.
 
-## What you can try
+PharmaShelf is built for independent pharmacy owners in Bangladesh, especially those looking after two or three branches. The **owner** is the buyer and decides what to order. The **pharmacist** needs a quick way to record stock moving across the counter. The **customer** wants to know whether a trip to the shop is worthwhile. The business goal is to help the owner catch shortages and slow-moving stock early enough to act.
 
-| Workflow | Example |
+**Proposed business model.** A monthly subscription per pharmacy, an additional fee for extra branches, and optional one-time help importing historical Excel records.
+
+## Try the live demo
+
+Start in **Availability** and ask **“Is paracetamol available at DEMO-01?”** Anyone can try this without signing in. Then open **Reports**, enter the demo owner credentials below, and request the **30-day expiry report** for **DEMO-01**. You can sign in directly in Studio.
+
+| Demo account | Email | Password |
+|---|---|---|
+| Owner | owner@pharmashelf.example.com | Demo-Owner-7Qm4-2026! |
+| Pharmacist | staff@pharmashelf.example.com | Demo-Staff-9Kp2-2026! |
+| Customer | customer@pharmashelf.example.com | Demo-Customer-3Vr8-2026! |
+
+The demo uses shared sample records. Confirming a sale or stock import changes the figures later visitors see.
+
+| Studio tab | What to try |
 |---|---|
-| Customer availability | Ask whether paracetamol is available at `DEMO-01`, then ask about another branch in the same conversation. |
-| Counter | Record an incoming batch or a sale. Retrying an identical sale ID records it once and deducts stock once. |
-| Owner reports | Review expiry risk, best sellers, and medicine demand over a selected period. |
-| Workbook imports | Download a template, map custom Excel headings, preview row errors, and confirm an import. |
-| Almanac | Search source-noted entries or ask owner chat a question. A supported answer includes citations. An unrelated question returns an empty source list. |
-| MCP | Use a compatible client to search medicines and check branch availability over Streamable HTTP or stdio. |
+| **Availability** | Ask about a medicine and branch. The customer sees availability while quantities, prices, and sales totals stay private. |
+| **Reports** | Choose DEMO-01. Review lots approaching expiry, rank best sellers by units or revenue, or compare a medicine’s sales across periods. |
+| **Counter** | Record an incoming batch or a sale. A confirmed sale reduces the remaining quantity of the selected batch. |
+| **Imports** | Choose a sales or stock workbook, download its template, and preview the file. Match custom column names and review row-level errors before confirming. |
+| **Almanac** | Search for “expiring” to find a branch procedure and its source note. To try a generated answer with citations, open the owner chat operation in Swagger. |
 
-The assistant is intended for stock and business operations. Questions about diagnosis, treatment, or dosage belong with a pharmacist or doctor.
+## How data moves through PharmaShelf
 
+![PharmaShelf data flow from the branch workspace through the API to stock records, reports, and assistant answers](./pharmashelf.drawio.png)
 
-## Local demo accounts
+Follow one batch through the diagram:
 
-Run `docker compose up -d --build` and open [the branch workspace](http://localhost:8010/studio/).
-The local startup script creates these accounts automatically.
+1. **Stock arrives.** A counter entry or confirmed stock workbook identifies the medicine, branch, lot, quantity received, unit cost, and expiry date. PostgreSQL keeps the batch linked to its medicine and branch.
+2. **A sale changes the shelf.** FastAPI validates the request. The sales service locks the batch, checks that it can supply the requested units, records the sale, and reduces the remaining quantity in one transaction. Repeating an identical sale ID leaves the stock count unchanged. Reusing the ID for a different sale produces a conflict.
+3. **The owner reads the numbers.** Reports use recorded sales to calculate units and revenue for the selected branch and period. The expiry report uses remaining units and recorded **unit cost** to show the purchase value still exposed. This is why a sale changes both the stock count and the amount at risk.
+4. **A customer checks the branch.** Customer chat can look up a medicine by name, resolve its catalog identifier (SKU), and check availability at the requested branch. Gemini uses the returned result to phrase the answer.
+5. **The owner asks what to do.** The Almanac supplies written guidance for questions such as “Which expiring batch should I review first?” The answer links back to the passages that support it.
 
-| Account | Email | Password | First thing to try |
-|---|---|---|---|
-| Owner (`admin`) | `owner@pharmashelf.example.com` | `Demo-Owner-7Qm4-2026!` | Open Reports and request the 30-day expiry report for `DEMO-01`. |
-| Pharmacist (`staff`) | `staff@pharmashelf.example.com` | `Demo-Staff-9Kp2-2026!` | Sign in through Swagger and check your role at `GET /api/v1/auth/me`. |
-| Customer (`customer`) | `customer@pharmashelf.example.com` | `Demo-Customer-3Vr8-2026!` | Sign in through Swagger to try the customer account. |
+Owner workflows use a login token. The API checks the role before returning an owner report or accepting a workbook. Previewing a workbook shows what would be imported. Confirmation is the step that writes the records.
 
-For a quick public demo, open **Availability** and ask “Is paracetamol available at DEMO-01?” No login is required.
+## How the Almanac answers “why” with RAG
 
-These shared credentials are for the local Docker demo. Hosted accounts are managed separately.
+Retrieval-augmented generation (RAG) lets the assistant use the pharmacy’s own written procedures. During ingestion, PharmaShelf splits each Almanac entry into overlapping passages. An embedding model converts each passage into a 384-dimensional vector, a numerical representation of its meaning. PostgreSQL stores those vectors with the passages and their source information using pgvector.
 
-## Run locally with Docker
+When an owner asks a question, the same model embeds the question. PharmaShelf searches active passages by cosine distance and checks whether the closest results are relevant enough to use. Gemini receives the matching text, and the API connects its numbered citations to the corresponding source notes.
 
-You need Git, Docker with Compose, a Gemini API key for generated answers, and internet access on the first start to download the container images and embedding model. The supplied CPU embedding image targets Intel/AMD x86-64. The commands below use PowerShell.
+For **“How should I choose which expiring batch to review first?”**, the demo returned *Which expiring lot deserves attention first?* The entry suggests weighing the remaining stock value against the time to expiry and recent sales pace. An unrelated question about tuning a violin returned a no-match response with an empty source list. The assistant covers pharmacy operations. Clinical questions belong with a pharmacist or doctor.
 
-### 1. Clone and configure
+## How other assistants use MCP
 
-Clone the repository using the Git link above. From the repository root, run:
+The Model Context Protocol (MCP) gives a compatible assistant access to two live catalog tools. **search_medicines** finds catalog matches by name, generic name, or SKU. **check_availability** takes an exact SKU and branch code and returns the availability flag. For example, a client can resolve “paracetamol” to **DEMO-PARA-500**, then check it at **DEMO-01**.
 
-```powershell
-Copy-Item .env.example .env
-notepad .env
-```
+The MCP server also offers a live demo availability resource and a reusable lookup prompt. It supports Streamable HTTP and local stdio. External clients use MCP to read current catalog and availability data. Owner chat uses RAG to retrieve written guidance. [Hosted MCP endpoint](https://pharmashelf.onrender.com/mcp)
 
-Set the following values in your local `.env`. Keep the real file out of Git.
+## Where to look in the repository
 
-| Setting | Purpose |
+| File or directory | What it does |
 |---|---|
-| `APP_NAME`, `DEBUG` | Application name and debug mode. Use `DEBUG=false` for the demo. |
-| `DB_NAME`, `DB_USER`, `DB_PASSWORD` | Local PostgreSQL database and credentials. Choose a private database password. |
-| `DB_HOST`, `DB_PORT` | Compose sets the API connection to `db:5432`. |
-| `JWT_SECRET`, `ACCESS_TOKEN_MINUTES` | Token signing secret and token lifetime. Generate a fresh secret for each deployment. |
-| `GEMINI_API_KEY`, `GEMINI_MODEL` | API key and a Gemini model available to that key. |
-| `PHARMASHELF_HOST_PORT` | Local API port. The default is `8010`. |
-
-To generate a JWT secret locally with Python:
-
-```powershell
-python -c "import secrets; print(secrets.token_urlsafe(48))"
-```
-
-### 2. Start the stack
-
-```powershell
-docker compose up -d --build
-docker compose logs -f api
-```
-
-Compose starts the FastAPI backend, PostgreSQL 17 with pgvector, and a CPU embedding service. On the first boot, allow several minutes for the model download. The API startup script applies Alembic migrations, seeds the demo inventory and Almanac, waits for a valid embedding, ingests the Almanac passages, and starts Uvicorn.
-
-When Uvicorn reports that startup is complete, press `Ctrl+C` to leave the log view. The containers continue running.
-
-| Local entry point | URL |
-|---|---|
-| Branch workspace | [localhost:8010/studio/](http://localhost:8010/studio/) |
-| Swagger API explorer | [localhost:8010/docs](http://localhost:8010/docs) |
-| Health | [localhost:8010/api/v1/health](http://localhost:8010/api/v1/health) |
-| MCP for Streamable HTTP clients | `http://localhost:8010/mcp` |
-
-If you changed `PHARMASHELF_HOST_PORT`, use that port in these URLs.
-
-### 3. Check the seed data
-
-```powershell
-$api = 'http://localhost:8010/api/v1'
-Invoke-RestMethod "$api/health"
-Invoke-RestMethod "$api/medicines/DEMO-PARA-500"
-Invoke-RestMethod "$api/inventory/availability?sku=DEMO-PARA-500&branch_code=DEMO-01"
-```
-
-A fresh-clone check with separate, empty Docker volumes verified that the API became healthy, `DEMO-PARA-500` was present, and four Almanac entries were indexed with 384-dimensional embeddings.
-
-To stop the stack while keeping local data:
-
-```powershell
-docker compose stop
-```
-<!-- 
-## API examples
-
-### Read a medicine record
-
-The medicine catalog uses a SKU for single-record lookup. This is the read operation in the catalog CRUD API. Swagger shows the routes, request schemas, and authorization requirements for the other operations.
-
-```powershell
-$api = 'http://localhost:8010/api/v1'
-$medicine = Invoke-RestMethod "$api/medicines/DEMO-PARA-500"
-$medicine | Select-Object sku, name, generic_name, strength, dosage_form
-```
-
-### Ask customer chat about stock
-
-```powershell
-$question = 'Is paracetamol available at DEMO-01?'
-$body = @{ content = $question } | ConvertTo-Json
-
-$first = Invoke-RestMethod -Method Post -Uri "$api/chat" `
-    -ContentType 'application/json' -Body $body -TimeoutSec 75
-
-$first | ConvertTo-Json -Depth 5
-```
-
-For a follow-up, send the conversation history:
-
-```powershell
-$body = @{
-    history = @(
-        @{ role = 'user'; content = $question }
-        @{ role = 'assistant'; content = $first.reply }
-    )
-    content = 'And at NO-SUCH-BRANCH?'
-} | ConvertTo-Json -Depth 5
-
-Invoke-RestMethod -Method Post -Uri "$api/chat" `
-    -ContentType 'application/json' -Body $body -TimeoutSec 75
-``` -->
-
-### Sign in and request an owner report
-
-Use an account with the `admin` role in the database being tested. Credentials from one deployment do not automatically create an account in another.
-
-```powershell
-$owner = Get-Credential -Message 'Enter your PharmaShelf owner email and password'
-$login = Invoke-RestMethod -Method Post -Uri "$api/auth/login" -Body @{
-    username = $owner.UserName
-    password = $owner.GetNetworkCredential().Password
-}
-$headers = @{ Authorization = "Bearer $($login.access_token)" }
-
-Invoke-RestMethod `
-    -Uri "$api/inventory/expiry-rescue?branch_code=DEMO-01&days=30" `
-    -Headers $headers | ConvertTo-Json -Depth 6
-```
-
-### Ask an owner question with citations
-
-```powershell
-$body = @{
-    content = 'How should I choose which expiring batch to review first?'
-} | ConvertTo-Json
-
-Invoke-RestMethod -Method Post -Uri "$api/chat/owner" `
-    -Headers $headers -ContentType 'application/json' `
-    -Body $body -TimeoutSec 75 | ConvertTo-Json -Depth 6
-```
-
-The verified expiry example returned citation `[1]` and source slug `prioritizing-expiring-lots`. Asking how to tune a violin returned a no-match reply and `sources: []`.
-
-## How the system works
-
-| Flow | Implementation |
-|---|---|
-| API and database | FastAPI controllers receive requests. Dependencies supply services and database sessions. Repositories query PostgreSQL through async SQLAlchemy. Pydantic schemas define API inputs and outputs. |
-| Customer chat and tools | Gemini selects `search_medicines` or `check_availability`. The backend runs the tool against the catalog or inventory service and sends the result back to Gemini. |
-| Almanac RAG | Ingestion splits entries into overlapping passages and sends them to `BAAI/bge-small-en-v1.5`. PostgreSQL stores each 384-dimensional vector with its passage. Owner chat embeds the question, retrieves active passages using cosine distance, and supplies matching evidence to Gemini. The API resolves citation numbers to database source notes. |
-| MCP | One server exposes two database-backed tools, a live availability resource, and a lookup prompt. The same server supports Streamable HTTP and stdio. |
-| Authorization | Owner endpoints require bearer authentication and the admin role. Public customer availability exposes a stock availability flag. |
-
-### Useful files
-
-| Path | Purpose |
-|---|---|
-| `app/main.py` | FastAPI application, exception handlers, frontend mount, and MCP HTTP lifespan |
-| `app/modules/` | Feature modules for auth, medicines, inventory, sales, imports, chat, and Almanac |
-| `app/integrations/llm/gemini.py` | Gemini integration for tool calls and grounded answers |
-| `app/modules/almanac/retrieval.py` | Semantic passage retrieval |
-| `app/mcp_server.py` | MCP tools, resource, prompt, and stdio entry point |
-| `scripts/start_local.py` | Local migration, seed, embedding readiness, ingestion, and API startup |
-| `scripts/ingest_almanac.py` | Chunking, embedding, and database ingestion |
-| `scripts/start_render.py` | Render startup command implementation |
-| `alembic/versions/` | Database migrations |
-
-To refresh the vector index after editing Almanac entries:
-
-```powershell
-docker compose exec -T api python -m scripts.ingest_almanac
-```
-
-## MCP client setup
-
-For **Streamable HTTP**, configure the client URL as `http://localhost:8010/mcp`.
-
-For **stdio**, start the Compose stack first. From the repository root, configure the client to launch:
-
-```text
-docker compose exec -T api python -m app.mcp_server
-```
-
-| Capability | Name |
-|---|---|
-| Tool | `search_medicines` |
-| Tool | `check_availability` |
-| Resource | `pharmashelf://demo/availability` |
-| Prompt | `availability_lookup` |
-
-Both transports were checked locally with the MCP Python client. The HTTP check called both tools, read the resource, and rendered the prompt.
-
-## Business model and demo
-
-The target buyer is an independent pharmacy owner in Bangladesh, especially one supervising multiple branches. The proposed model is a monthly pharmacy subscription, an additional fee for extra branches, and optional one-time setup to import historical Excel data.
-
-A short demo can follow one medicine through the system: check its availability as a customer, preview an Excel sale, open the owner’s expiry report, then ask which lot deserves attention first. Show the calculated BDT amount at risk alongside the Almanac source that explains how to act on it.
+| [app/frontend/](app/frontend/) | Contains the five-tab Studio interface and its forms for availability, reports, counter entries, imports, and Almanac search. |
+| [app/main.py](app/main.py) | Assembles the FastAPI application, serves Studio, and connects the HTTP MCP service. |
+| [app/api/v1/router.py](app/api/v1/router.py) | Brings the feature routes together under the versioned API. |
+| [app/modules/imports/](app/modules/imports/) | Reads Excel workbooks, maps headings, validates rows, builds previews, and confirms sales or stock imports. |
+| [app/modules/sales/](app/modules/sales/) and [app/modules/inventory/](app/modules/inventory/) | Record sales and batches and calculate the figures used in branch reports. |
+| [app/modules/auth/](app/modules/auth/) | Handles sign-in, user identity, and role checks. |
+| [app/modules/chat/](app/modules/chat/) and [app/integrations/llm/gemini.py](app/integrations/llm/gemini.py) | Connect customer questions to catalog tools and owner questions to answers grounded in Almanac passages. |
+| [scripts/ingest_almanac.py](scripts/ingest_almanac.py) and [app/modules/almanac/retrieval.py](app/modules/almanac/retrieval.py) | Prepare the searchable passage index and retrieve relevant passages for a question. |
+| [app/mcp_server.py](app/mcp_server.py) | Defines the two MCP tools, the availability resource, and the lookup prompt. |
+| [scripts/start_render.py](scripts/start_render.py) and [alembic/versions/](alembic/versions/) | Prepare the hosted application at startup and track database schema changes. |
